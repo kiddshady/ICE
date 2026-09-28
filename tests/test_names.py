@@ -63,7 +63,7 @@ class Names(unittest.TestCase):
 
     def test_admin_rename_only_goes_to_the_log(self):
         g = Group()
-        d = g.say(replace(ADMIN, name="Francisco"), "buenas")
+        d = g.say(replace(ADMIN, name="Fran Admin"), "buenas")
         self.assertEqual(kinds(d), ["Log"])
 
 
