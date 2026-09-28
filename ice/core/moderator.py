@@ -12,15 +12,26 @@ from .decision import Decision
 from .events import ButtonPressed, Event, Joined, Left, Message, Tick
 from .rules import commands, flood, links, names, repeat, verification
 from .state import GroupState
+from .store import Store
 from .timefmt import duration
 
 
 class Moderator:
-    def __init__(self, config: Config | None = None) -> None:
+    def __init__(self, config: Config | None = None, store: Store | None = None) -> None:
+        """Sin `store`, la memoria vive solo mientras el programa está
+        prendido (el simulador y los tests). Con `store`, arranca de lo que
+        quedó guardado y guarda después de cada evento."""
         self.config = config or Config()
-        self.state = GroupState()
+        self.store = store
+        self.state = store.load() if store else GroupState()
 
     def handle(self, event: Event, now: float) -> Decision:
+        d = self._decide(event, now)
+        if self.store:
+            self.store.save(self.state)
+        return d
+
+    def _decide(self, event: Event, now: float) -> Decision:
         ctx = Ctx(self.state, self.config, now)
         d = Decision()
         match event:

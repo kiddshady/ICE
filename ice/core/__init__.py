@@ -2,5 +2,6 @@
 from .config import Config
 from .decision import Decision, Step
 from .moderator import Moderator
+from .store import Store
 
-__all__ = ["Config", "Decision", "Moderator", "Step"]
+__all__ = ["Config", "Decision", "Moderator", "Step", "Store"]

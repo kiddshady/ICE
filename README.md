@@ -36,6 +36,7 @@ ice/
     decision.py        la respuesta: acciones + el porqué, paso a paso
     moderator.py       la puerta de entrada: evento -> reglas -> decisión
     state.py           lo que el bot recuerda de cada miembro
+    store.py           esa memoria guardada en SQLite, para los reinicios
     config.py          las perillas (tiempos, límites)
     rules/
       verification.py  botón "Verificar" para los que entran
@@ -114,12 +115,25 @@ Las reglas de `/reglas` son generales, para cualquier tipo de grupo. La 6
 
 Los números se cambian en `ice/core/config.py`.
 
+## La memoria en disco
+
+`Moderator(store=Store("ice.db"))` arranca desde lo que quedó guardado en ese
+archivo y guarda después de cada evento, solo lo que cambió. Sin `store`
+(el simulador, los tests) todo vive en memoria como antes. Las reglas no
+saben la diferencia.
+
+Se guardan los miembros (nombre, @usuario, advertencias, silencio,
+verificación pendiente, cuándo entró) y los baneados. Los tiempos del
+anti-flood y los textos del anti-repetición no se guardan: duran minutos.
+
+El bot de verdad tiene que pasarle `time.time()` como hora. Así un silencio o
+una verificación vencen a su hora aunque el bot haya estado apagado.
+
 ## Lo que falta
 
 - **Conectarlo a Telegram**: un adaptador con [aiogram](https://aiogram.dev)
   que traduzca los updates a eventos y las acciones a llamadas a la API.
   Cada acción ya dice qué método usa (`actions.py`, campo `api`).
-- **Memoria que sobreviva a un reinicio**: pasar `state.py` a SQLite.
 - **Un temporizador** que mande `Tick` cada pocos segundos, para que venzan
   las verificaciones.
 

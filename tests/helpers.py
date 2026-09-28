@@ -13,8 +13,8 @@ SPAM = User(4, "PromoCripto", username="promocripto")
 class Group:
     """Un grupo para tests: el reloj lo maneja el test, no el sistema."""
 
-    def __init__(self, config: Config | None = None) -> None:
-        self.mod = Moderator(config)
+    def __init__(self, config: Config | None = None, store=None) -> None:
+        self.mod = Moderator(config, store)
         self.now = 1000.0
         self._next = 1
         for u in (ADMIN, OLD):

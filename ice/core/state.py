@@ -1,7 +1,8 @@
 """La memoria del bot: qué sabe de cada miembro.
 
-Por ahora vive en memoria (si el bot se reinicia, se olvida de todo). Cuando
-conectemos Telegram lo pasamos a SQLite; la forma de los datos no cambia.
+Vive en memoria mientras el bot corre. Para que sobreviva a un reinicio, el
+Moderator la guarda en SQLite después de cada evento (ver store.py). Las
+reglas no se enteran: siempre trabajan con esto.
 """
 from __future__ import annotations
 
