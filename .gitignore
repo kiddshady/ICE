@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+*.db
+
+# Datos locales de plugins de Claude Code: no son de ICE.
+.claude/data/

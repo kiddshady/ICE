@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ice-sim",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "ice.sim", "4390"],
+      "port": 4390
+    }
+  ]
+}

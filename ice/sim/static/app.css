@@ -1,0 +1,631 @@
+/* ICE · simulador, con la piel de Prism (Opal): hojas de vidrio acromáticas
+   sobre una niebla con grano. Lo importante no se pinta: se talla (pozo
+   oscuro con el canto encendido). El rojo es solo para lo que falla o se
+   frena. Los valores salen de S:\tools\Prism\renderer\css\tokens.css. */
+
+@font-face {
+  font-family: 'Roboto Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('fonts/roboto-mono-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Roboto Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('fonts/roboto-mono-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Roboto Mono'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('fonts/roboto-mono-latin-500-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Roboto Mono'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('fonts/roboto-mono-latin-ext-500-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+:root {
+  --bg: oklch(14.5% 0 258);
+
+  /* Hojas: alfas de luz. Cuanto más alto flota algo, más luz junta. */
+  --s1: rgb(255 255 255 / .035);
+  --s2: rgb(255 255 255 / .055);
+  --s3: rgb(255 255 255 / .085);
+  --s4: rgb(255 255 255 / .11);
+  /* Pozos: alfas de sombra, hunden sobre cualquier hoja. */
+  --sunken: rgb(0 0 0 / .28);
+  --sunken-2: rgb(0 0 0 / .44);
+
+  --glass: blur(17px) saturate(135%);
+  --glass-heavy: blur(28px) saturate(135%);
+
+  --edge-lit: rgb(255 255 255 / .10);
+  --line: rgb(255 255 255 / .055);
+  --line-2: rgb(255 255 255 / .09);
+  --line-3: rgb(255 255 255 / .15);
+  --sheet: inset 0 1px 0 var(--edge-lit), inset 0 0 0 1px var(--line);
+  --hairline: inset 0 0 0 1px var(--line);
+
+  --text: oklch(93.9% 0 258);
+  --text-2: oklch(73.3% 0 258);
+  --text-3: oklch(62% 0 258);
+  --text-4: oklch(48% 0 258);
+
+  /* El acento es luz, y nunca rellena: vive en cantos, líneas y puntos. */
+  --accent-rgb: 240 243 247;
+  --wash-1: rgb(var(--accent-rgb) / .05);
+  --wash-2: rgb(var(--accent-rgb) / .09);
+  --wash-3: rgb(var(--accent-rgb) / .15);
+  --ring: rgb(var(--accent-rgb) / .55);
+  --select: rgb(var(--accent-rgb) / .16);
+
+  /* Tallado: el objeto más hondo, con el canto más vivo. */
+  --deep: rgb(0 0 0 / .38);
+  --deep-2: rgb(0 0 0 / .50);
+  --rim: rgb(var(--accent-rgb) / .40);
+  --rim-2: rgb(var(--accent-rgb) / .62);
+  --carved: inset 0 1px 0 rgb(255 255 255 / .16), inset 0 0 0 1px var(--rim);
+  --carved-2: inset 0 1px 0 rgb(255 255 255 / .22), inset 0 0 0 1px var(--rim-2);
+
+  --danger-rgb: 212 103 107;
+  --danger: rgb(var(--danger-rgb));
+  --danger-wash: rgb(var(--danger-rgb) / .12);
+  --danger-ring: rgb(var(--danger-rgb) / .45);
+
+  --e1: 0 1px 2px rgb(0 0 0 / .30);
+  --e2: 0 2px 8px rgb(0 0 0 / .34), 0 12px 34px rgb(0 0 0 / .40);
+  --e3: 0 4px 12px rgb(0 0 0 / .38), 0 20px 48px rgb(0 0 0 / .46);
+
+  --sans: 'Inter', 'Inter Variable', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Roboto Mono', ui-monospace, monospace;
+  --track-tight: -.014em;
+  --track-caps: .13em;
+
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+
+  /* Sale rápido, frena largo. Nada rebota. */
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  --ease-soft: cubic-bezier(.33, 1, .68, 1);
+  --ease-in: cubic-bezier(.55, 0, 1, .45);
+  --t-1: 110ms;
+  --t-2: 180ms;
+  --t-3: 280ms;
+  --t-4: 420ms;
+  --tr-color: color var(--t-1) var(--ease-soft), background-color var(--t-1) var(--ease-soft),
+              box-shadow var(--t-1) var(--ease-soft);
+
+  --fade: 28px;
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.5 var(--sans);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+.sprite { display: none; }
+.mono { font-family: var(--mono); }
+button, input { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: default; }
+
+::selection { background: var(--select); color: var(--text); }
+
+.scroll::-webkit-scrollbar { width: 10px; }
+.scroll::-webkit-scrollbar-track { background: transparent; }
+.scroll::-webkit-scrollbar-thumb {
+  background: transparent; border-radius: 8px;
+  border: 3px solid transparent; background-clip: content-box;
+}
+.scroll:hover::-webkit-scrollbar-thumb { background: rgb(255 255 255 / .12); background-clip: content-box; }
+.scroll::-webkit-scrollbar-thumb:hover { background: rgb(255 255 255 / .22); background-clip: content-box; }
+
+:focus { outline: none; }
+:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ring); }
+
+.icon {
+  width: 16px; height: 16px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ------------------------------------------------------------ el sustrato
+   Niebla de manchas de luz + grano + un velo parejo que hunde todo para que
+   el texto gane siempre. Es estática: animarla recompondría cada vidrio. */
+.fog {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.038'/%3E%3C/svg%3E"),
+    linear-gradient(rgb(8 8 9 / .3), rgb(8 8 9 / .3)),
+    radial-gradient(46vw 46vw at 10% 0%, rgb(255 255 255 / .062), transparent 70%),
+    radial-gradient(42vw 42vw at 94% 16%, rgb(255 255 255 / .05), transparent 70%),
+    radial-gradient(40vw 40vw at 42% 110%, rgb(255 255 255 / .042), transparent 70%);
+}
+
+/* ------------------------------------------------------------ armado */
+
+.app { position: relative; z-index: 0; height: 100%; display: flex; flex-direction: column; }
+
+.top {
+  display: flex; align-items: center; gap: 20px;
+  height: 52px; padding: 0 16px 0 20px;
+  background: var(--s1);
+  backdrop-filter: var(--glass-heavy);
+  box-shadow: inset 0 1px 0 var(--edge-lit), inset 0 -1px 0 var(--line);
+  position: relative; z-index: 2;
+}
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); }
+.brand-mark {
+  width: 20px; height: 20px; fill: none; stroke: currentColor;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.brand-mark .facet-2 { opacity: .55; }
+.brand-mark .facet-3 { opacity: .28; }
+.brand-name { font-size: 12px; font-weight: 600; letter-spacing: .24em; }
+.brand-sub { color: var(--text-3); font-size: 12px; }
+
+.clock { display: flex; align-items: center; gap: 10px; margin-left: auto; color: var(--text-3); }
+.clock .icon { width: 14px; height: 14px; }
+.clock-label { font-size: 10px; font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; }
+.clock-value {
+  font-size: 13px; color: var(--text); min-width: 9ch; user-select: text;
+  padding: 3px 9px; border-radius: var(--r-sm);
+  background: var(--sunken); box-shadow: var(--hairline);
+}
+.clock-jumps { display: flex; gap: 4px; margin-left: 6px; }
+
+.cols {
+  flex: 1; min-height: 0;
+  display: grid; grid-template-columns: 272px minmax(0, 1fr) 404px;
+  gap: 12px; padding: 12px;
+}
+
+/* Las tres columnas son hojas de vidrio sobre la niebla: llevan blur. Lo que
+   vive adentro es relleno translúcido, sin blur. */
+.panel {
+  display: flex; flex-direction: column; min-height: 0;
+  background: var(--s1);
+  backdrop-filter: var(--glass);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sheet), var(--e2);
+  overflow: hidden;
+}
+.panel-head { padding: 16px 18px 6px; }
+.panel-head h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: var(--track-tight); }
+.panel-hint { margin: 3px 0 0; color: var(--text-3); font-size: 12px; }
+
+/* Scroll con fade arriba (queda al aire contra la cabecera). Abajo cada panel
+   muere contra un bloque con su propio hairline: ahí corta limpio. */
+@property --fade-top { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.scroll {
+  flex: 1; min-height: 0;
+  overflow-y: auto; overflow-x: hidden;
+  padding: var(--fade) 12px;
+  --fade-top: var(--fade);
+  transition: --fade-top var(--t-2) var(--ease-soft);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade-top), #000 100%);
+}
+.scroll.at-top { --fade-top: 0px; }
+
+/* ------------------------------------------------------------ controles */
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 26px; padding: 0 10px; border-radius: var(--r-sm);
+  background: var(--s2); color: var(--text-2);
+  font-size: 11.5px; font-weight: 500; white-space: nowrap;
+  box-shadow: var(--sheet), var(--e1);
+  transition: var(--tr-color), transform var(--t-1) var(--ease-soft), opacity var(--t-2) var(--ease-soft);
+}
+.chip .icon { width: 13px; height: 13px; }
+.chip:hover { background: var(--s3); color: var(--text); box-shadow: inset 0 1px 0 var(--edge-lit), inset 0 0 0 1px var(--line-2), var(--e1); }
+.chip:active { transform: scale(.975); }
+
+.ghost-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 30px; padding: 0 12px; border-radius: var(--r-sm);
+  color: var(--text-2); font-size: 12px; font-weight: 500;
+  transition: var(--tr-color), transform var(--t-1) var(--ease-soft);
+}
+.ghost-btn .icon { width: 14px; height: 14px; }
+.ghost-btn:hover { background: var(--wash-1); color: var(--text); }
+.ghost-btn:active { background: var(--wash-2); transform: scale(.975); }
+
+.icon-btn {
+  display: grid; place-items: center;
+  width: 30px; height: 30px; border-radius: var(--r-sm);
+  color: var(--text-3);
+  transition: var(--tr-color), transform var(--t-1) var(--ease-soft), opacity var(--t-2) var(--ease-soft);
+}
+.icon-btn .icon { width: 15px; height: 15px; }
+.icon-btn:hover { background: var(--wash-1); color: var(--text); }
+.icon-btn:active { background: var(--wash-2); transform: scale(.92); }
+.icon-btn.small { width: 22px; height: 22px; }
+.icon-btn.small .icon { width: 13px; height: 13px; }
+
+.field {
+  flex: 1; min-width: 0;
+  height: 36px; padding: 0 12px;
+  background: var(--sunken); border: 0; border-radius: var(--r-sm);
+  box-shadow: var(--hairline);
+  font-size: 13px; user-select: text; cursor: text;
+  transition: box-shadow var(--t-2) var(--ease-soft), background-color var(--t-2) var(--ease-soft),
+              opacity var(--t-2) var(--ease-soft);
+}
+.field::placeholder { color: var(--text-4); }
+.field:hover { box-shadow: inset 0 0 0 1px var(--line-2); }
+/* Con foco el pozo se hunde más: la atención baja hacia donde se escribe. */
+.field:focus, .field:focus-visible {
+  background: var(--sunken-2);
+  box-shadow: inset 0 0 0 1px var(--line-3), 0 0 0 3px var(--wash-1);
+}
+.field:disabled { opacity: .45; }
+
+/* ------------------------------------------------------------ personas */
+
+.people-list { display: flex; flex-direction: column; gap: 6px; }
+
+.person {
+  position: relative;
+  display: grid; grid-template-columns: 34px 1fr auto; gap: 0 11px; align-items: center;
+  padding: 10px 8px 10px 10px; border-radius: var(--r-md);
+  background: var(--s1);
+  box-shadow: var(--hairline);
+  animation: rise var(--t-4) var(--ease) backwards;
+  transition: background-color var(--t-2) var(--ease-soft), box-shadow var(--t-2) var(--ease),
+              opacity var(--t-2) var(--ease-soft);
+}
+.person:hover { background: var(--s2); box-shadow: var(--sheet); }
+/* La persona que escribe está tallada: pozo con el canto encendido. */
+.person.is-active { background: var(--deep); box-shadow: var(--carved), var(--e2); }
+.person.is-active:hover { background: var(--deep-2); box-shadow: var(--carved-2), var(--e2); }
+.person.is-out .avatar, .person.is-out .person-name { opacity: .45; }
+
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-weight: 600; font-size: 13px; color: var(--text);
+  background: var(--s3); box-shadow: var(--sheet);
+  transition: opacity var(--t-2) var(--ease-soft), box-shadow var(--t-2) var(--ease);
+}
+.person-main { min-width: 0; }
+.person-name { font-weight: 600; letter-spacing: var(--track-tight); transition: opacity var(--t-2) var(--ease-soft); }
+.person-role { color: var(--text-3); font-size: 11.5px; }
+/* El @ se puede copiar para usarlo en /ban @usuario. */
+.person-handle { color: var(--text-2); font-size: 10.5px; user-select: text; cursor: text; }
+.badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.badges:empty { display: none; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 19px; padding: 0 7px; border-radius: var(--r-xs);
+  font-size: 11px; font-weight: 500; white-space: nowrap;
+  background: var(--s2); color: var(--text-2); box-shadow: var(--hairline);
+  animation: pop var(--t-3) var(--ease) backwards;
+}
+.badge .mono { font-size: 10.5px; color: var(--text); }
+.badge.accent { background: var(--deep); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+.badge.danger { background: var(--danger-wash); color: var(--danger); box-shadow: inset 0 0 0 1px rgb(var(--danger-rgb) / .22); }
+.badge.danger .mono { color: var(--danger); }
+.badge.bye { animation: unpop 160ms var(--ease-in) forwards; }
+
+.warn-dots { display: inline-flex; gap: 3px; }
+.warn-dots i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--line-3);
+  transition: background-color var(--t-2) var(--ease-soft), transform var(--t-2) var(--ease);
+}
+.warn-dots i.on { background: var(--danger); transform: scale(1.2); }
+
+.person-tools { display: flex; gap: 2px; }
+
+.presence-btn, .rename-btn {
+  display: grid; place-items: center;
+  width: 28px; height: 28px; border-radius: var(--r-sm);
+  color: var(--text-3);
+  transition: var(--tr-color), transform var(--t-1) var(--ease-soft), opacity var(--t-2) var(--ease-soft);
+}
+.presence-btn .icon, .rename-btn .icon { width: 15px; height: 15px; }
+.presence-btn:hover, .rename-btn:hover { background: var(--wash-2); color: var(--text); }
+.presence-btn:active, .rename-btn:active { transform: scale(.92); }
+/* El lápiz aparece recién cuando la tarjeta tiene la atención. */
+.rename-btn { opacity: 0; }
+.person:hover .rename-btn, .person:focus-within .rename-btn, .person.is-renaming .rename-btn { opacity: 1; }
+.person.is-renaming .rename-btn { background: var(--wash-2); color: var(--text); }
+
+/* El campo para el nombre nuevo se despliega abajo, a lo ancho de la tarjeta. */
+.rename-row {
+  grid-column: 1 / -1;
+  display: grid; grid-template-rows: 0fr; opacity: 0;
+  transition: grid-template-rows var(--t-3) var(--ease), opacity var(--t-2) var(--ease-soft);
+}
+.person.is-renaming .rename-row { grid-template-rows: 1fr; opacity: 1; }
+.rename-inner { min-height: 0; overflow: hidden; display: flex; gap: 4px; }
+/* Margen y no padding: el padding no se deja plegar a 0, y deja lugar para el anillo del foco. */
+.rename-inner > * { margin: 10px 0 3px; }
+.rename-inner .field { height: 30px; padding: 0 10px; margin-left: 3px; }
+
+.add-person {
+  display: flex; gap: 6px; padding: 12px;
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+/* ------------------------------------------------------------ chat */
+
+.chat { display: flex; flex-direction: column; gap: 6px; padding-left: 18px; padding-right: 18px; }
+
+.msg {
+  position: relative;
+  align-self: flex-start;
+  max-width: min(560px, 84%);
+  padding: 8px 12px 9px;
+  border-radius: var(--r-xs) var(--r-lg) var(--r-lg) var(--r-lg);
+  background: var(--s2);
+  box-shadow: var(--sheet);
+  animation: rise var(--t-4) var(--ease) backwards;
+  transition: opacity var(--t-3) var(--ease-soft), background-color var(--t-3) var(--ease-soft),
+              box-shadow var(--t-3) var(--ease);
+}
+/* El bot habla desde un pozo: es la voz del sistema. Sin el canto encendido,
+   que en Opal se reserva para una sola cosa por pantalla. */
+.msg.bot { background: var(--deep); box-shadow: inset 0 1px 0 var(--edge-lit), inset 0 0 0 1px var(--line-2), var(--e1); }
+.msg-head { display: flex; align-items: baseline; gap: 10px; font-size: 12px; margin-bottom: 1px; }
+.msg-name { font-weight: 600; color: var(--text-2); }
+.msg.bot .msg-name { color: var(--text); font-size: 10px; letter-spacing: var(--track-caps); }
+.msg-time { color: var(--text-4); font-size: 10.5px; margin-left: auto; }
+.msg-text { white-space: pre-wrap; word-break: break-word; user-select: text; transition: color var(--t-3) var(--ease-soft); }
+.msg-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--text-3); margin-bottom: 2px;
+}
+.msg-tag .icon { width: 12px; height: 12px; }
+
+.quote {
+  margin: 3px 0 5px; padding: 4px 9px;
+  border-radius: var(--r-xs); background: var(--sunken);
+  box-shadow: inset 2px 0 0 var(--line-3);
+  font-size: 12px; color: var(--text-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.quote b { font-weight: 600; color: var(--text-2); }
+
+/* El mensaje que ICE borró queda como fantasma. */
+.deleted-note {
+  display: grid; grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows var(--t-3) var(--ease), opacity var(--t-3) var(--ease-soft);
+}
+.deleted-note > span {
+  overflow: hidden; display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--danger);
+}
+.deleted-note .icon { width: 12px; height: 12px; }
+.msg.is-deleted { opacity: .6; background: transparent; box-shadow: inset 0 0 0 1px rgb(var(--danger-rgb) / .2); }
+.msg.is-deleted .msg-text { color: var(--text-4); text-decoration: line-through; text-decoration-color: rgb(var(--danger-rgb) / .45); }
+.msg.is-deleted .deleted-note { grid-template-rows: 1fr; opacity: 1; }
+.msg.is-deleted .deleted-note > span { margin-top: 4px; }
+
+.msg-button {
+  display: block; width: 100%; margin-top: 9px;
+  height: 30px; border-radius: var(--r-sm);
+  background: var(--s3); color: var(--text); font-weight: 600; font-size: 12px;
+  box-shadow: var(--sheet), var(--e1);
+  transition: var(--tr-color), transform var(--t-1) var(--ease-soft), opacity var(--t-2) var(--ease-soft);
+}
+.msg-button:hover { background: var(--s4); box-shadow: inset 0 1px 0 var(--edge-lit), inset 0 0 0 1px var(--line-3), var(--e1); }
+.msg-button:active { transform: scale(.975); }
+.msg-button:disabled { opacity: .35; pointer-events: none; }
+
+.msg-reply {
+  position: absolute; top: 5px; right: -34px;
+  opacity: 0; transform: translateX(-4px);
+  transition: opacity var(--t-2) var(--ease-soft), transform var(--t-2) var(--ease),
+              var(--tr-color);
+}
+.msg:hover .msg-reply, .msg-reply:focus-visible { opacity: 1; transform: none; }
+
+.sys {
+  align-self: center; max-width: 80%;
+  padding: 3px 12px; border-radius: 999px;
+  background: var(--s1); box-shadow: var(--hairline);
+  color: var(--text-3); font-size: 11.5px; text-align: center;
+  user-select: text;
+  animation: rise var(--t-4) var(--ease) backwards;
+}
+
+/* ------------------------------------------------------------ composer */
+
+.composer {
+  padding: 12px 16px 14px;
+  box-shadow: inset 0 1px 0 var(--line);
+  display: flex; flex-direction: column; gap: 9px;
+}
+.composer-meta { display: flex; align-items: center; gap: 10px; min-height: 24px; flex-wrap: wrap; }
+.as { color: var(--text-3); font-size: 12px; transition: color var(--t-2) var(--ease-soft); }
+.as b { color: var(--text); font-weight: 600; transition: color var(--t-2) var(--ease-soft); }
+.as.warn b { color: var(--danger); }
+
+.reply-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 100%; height: 24px; padding: 0 2px 0 9px; border-radius: var(--r-sm);
+  background: var(--sunken); box-shadow: inset 2px 0 0 var(--line-3), var(--hairline);
+  color: var(--text-2); font-size: 12px;
+  opacity: 0; transform: translateY(4px); pointer-events: none;
+  transition: opacity var(--t-2) var(--ease-soft), transform var(--t-2) var(--ease);
+}
+.reply-chip.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.reply-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 340px; }
+.reply-chip .icon { width: 13px; height: 13px; }
+
+.composer-row { display: flex; gap: 8px; }
+
+.toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 12px; border-radius: var(--r-sm);
+  color: var(--text-3); font-size: 12px; font-weight: 500;
+  box-shadow: var(--hairline);
+  transition: var(--tr-color), opacity var(--t-2) var(--ease-soft);
+}
+.toggle .icon { width: 14px; height: 14px; }
+.toggle:hover { background: var(--wash-1); color: var(--text); }
+/* Encendido = tallado, no pintado. */
+.toggle[aria-pressed="true"] { background: var(--deep); color: var(--text); box-shadow: var(--carved); }
+
+/* El primario de la pantalla: obsidiana, el objeto más hondo. */
+.send {
+  display: grid; place-items: center;
+  width: 42px; border-radius: var(--r-sm);
+  background: var(--deep); color: var(--text);
+  box-shadow: var(--carved), var(--e2);
+  transition: var(--tr-color), transform var(--t-1) var(--ease-soft), opacity var(--t-2) var(--ease-soft);
+}
+.send .icon { stroke-width: 2.1; }
+.send:hover { background: var(--deep-2); box-shadow: var(--carved-2), 0 0 16px rgb(var(--accent-rgb) / .08), var(--e2); }
+.send:active { transform: scale(.95); }
+.send:disabled, .toggle:disabled, .quick .chip:disabled { opacity: .35; pointer-events: none; }
+
+.quick { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ------------------------------------------------------------ por qué */
+
+/* Pestañas como segmentado: la cápsula viaja entre opciones. */
+.tabs { padding-bottom: 8px; }
+.tabs-track {
+  position: relative; display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  padding: 2px; border-radius: var(--r-sm);
+  background: var(--sunken); box-shadow: var(--hairline);
+}
+.tab {
+  position: relative; z-index: 1;
+  height: 26px; padding: 0 16px;
+  color: var(--text-3); font-weight: 500; font-size: 12px;
+  transition: color var(--t-2) var(--ease-soft);
+}
+.tab:hover { color: var(--text-2); }
+.tab.is-on { color: var(--text); }
+.tab-bar {
+  position: absolute; top: 2px; left: 0; height: calc(100% - 4px); width: 0;
+  border-radius: var(--r-xs);
+  background: var(--s3); box-shadow: inset 0 1px 0 rgb(255 255 255 / .07), var(--e1);
+  transition: transform var(--t-3) var(--ease), width var(--t-3) var(--ease);
+}
+.tab-bar.placing { transition: none; }
+
+.views { position: relative; flex: 1; min-height: 0; }
+.view {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; gap: 8px;
+  opacity: 0; transform: translateY(8px); pointer-events: none;
+  transition: opacity var(--t-3) var(--ease-soft), transform var(--t-3) var(--ease), --fade-top var(--t-2) var(--ease-soft);
+}
+.view.is-on { opacity: 1; transform: none; pointer-events: auto; }
+
+.empty { margin: 4px 6px; color: var(--text-3); font-size: 12.5px; transition: opacity var(--t-2) var(--ease-soft); }
+
+.trace {
+  flex: none;
+  padding: 11px 13px 13px; border-radius: var(--r-md);
+  background: var(--s2); box-shadow: var(--sheet);
+  animation: drop var(--t-4) var(--ease) backwards;
+  transition: box-shadow var(--t-4) var(--ease), background-color var(--t-4) var(--ease-soft);
+}
+.trace.is-new { background: var(--s3); box-shadow: inset 0 1px 0 var(--edge-lit), inset 0 0 0 1px var(--rim), var(--e2); }
+.trace-head { display: flex; align-items: baseline; gap: 8px; }
+.trace-n { color: var(--text-4); font-size: 10.5px; }
+.trace-title { font-weight: 600; flex: 1; min-width: 0; letter-spacing: var(--track-tight); user-select: text; }
+.trace-time { color: var(--text-4); font-size: 10.5px; }
+
+.blocked {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 7px; padding: 4px 8px; border-radius: var(--r-xs);
+  background: var(--danger-wash); color: var(--danger); font-size: 11.5px;
+  box-shadow: inset 0 0 0 1px rgb(var(--danger-rgb) / .22);
+}
+.blocked .icon { width: 13px; height: 13px; }
+
+.steps { list-style: none; margin: 9px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.step { display: grid; grid-template-columns: 16px 1fr; gap: 9px; }
+.step .icon { width: 15px; height: 15px; margin-top: 1px; }
+.step.pass .icon { color: var(--text-4); }
+.step.hit .icon { color: var(--text); fill: var(--wash-3); }
+.step.info .icon { color: var(--text-4); fill: var(--text-4); }
+.step-rule { font-size: 10px; font-weight: 600; letter-spacing: var(--track-caps); color: var(--text-4); text-transform: uppercase; }
+.step.hit .step-rule { color: var(--text-2); }
+.step-detail { font-size: 12.5px; color: var(--text-3); user-select: text; }
+.step.hit .step-detail { color: var(--text); }
+
+.calls { margin-top: 11px; padding-top: 9px; box-shadow: inset 0 1px 0 var(--line); }
+.calls-title { font-size: 10px; font-weight: 600; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-4); margin-bottom: 5px; }
+.call { display: grid; gap: 1px; padding: 3px 0; font-size: 12px; }
+.call-api { font-family: var(--mono); font-size: 11px; color: var(--text); user-select: text; }
+.call-detail { color: var(--text-3); user-select: text; }
+.call-detail, .call-api { min-width: 0; overflow-wrap: anywhere; }
+
+.log-line {
+  flex: none;
+  display: grid; grid-template-columns: auto 1fr; gap: 10px;
+  padding: 8px 11px; border-radius: var(--r-md);
+  background: var(--s2); box-shadow: var(--sheet);
+  font-size: 12.5px; user-select: text;
+  animation: drop var(--t-4) var(--ease) backwards;
+}
+.log-line .mono { color: var(--text-4); font-size: 10.5px; padding-top: 2px; }
+
+/* ------------------------------------------------------------ flotantes
+   Overlays sobre el contenido: son hermanos del shell, así que llevan blur. */
+
+.toast {
+  position: fixed; left: 50%; top: 64px; z-index: 10;
+  padding: 9px 16px; border-radius: var(--r-md);
+  background: var(--s3); backdrop-filter: var(--glass-heavy);
+  color: var(--text); font-size: 12.5px;
+  box-shadow: var(--sheet), var(--e3);
+  opacity: 0; transform: translate(-50%, -8px); pointer-events: none;
+  transition: opacity var(--t-3) var(--ease-soft), transform var(--t-3) var(--ease);
+}
+.toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+.toast.danger { color: var(--danger); box-shadow: inset 0 1px 0 var(--edge-lit), inset 0 0 0 1px var(--danger-ring), var(--e3); }
+
+.tip {
+  position: fixed; z-index: 20; top: 0; left: 0;
+  max-width: 260px; padding: 5px 9px; border-radius: var(--r-sm);
+  background: var(--s3); backdrop-filter: var(--glass-heavy);
+  color: var(--text); font-size: 11.5px;
+  box-shadow: var(--sheet), var(--e3);
+  opacity: 0; transform: translateY(3px); pointer-events: none;
+  transition: opacity var(--t-1) var(--ease-soft), transform var(--t-1) var(--ease-soft);
+}
+.tip.is-on { opacity: 1; transform: none; }
+
+/* Opal aflora: todo entra subiendo en Y. */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes drop { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes pop { from { opacity: 0; transform: scale(.88); } }
+@keyframes unpop { to { opacity: 0; transform: scale(.88); } }
+
+/* Con "reducir movimiento" pedido por el sistema, las cosas aparecen sin
+   aflorar (los cambios de estado siguen con su fundido corto). */
+@media (prefers-reduced-motion: reduce) {
+  .person, .badge, .msg, .sys, .trace, .log-line { animation: none; }
+}
+
+@media (max-width: 1100px) {
+  .cols { grid-template-columns: 240px minmax(0, 1fr) 340px; }
+  .clock-label { display: none; }
+}
+@media (max-width: 860px) {
+  body { overflow: auto; }
+  .app { height: auto; }
+  .top { flex-wrap: wrap; height: auto; padding: 10px 16px; }
+  .cols { grid-template-columns: 1fr; }
+  .panel { height: 70vh; }
+  .people-panel { height: auto; max-height: 50vh; }
+}
