@@ -60,6 +60,9 @@ def check(msg: Message, m: Member, ctx: Ctx, d: Decision) -> bool:
             why = (f"El mensaje tiene {found}, y en este grupo no se permiten "
                    f"links para nadie, sin importar la antigüedad ({seniority}).")
             reason = "link no permitido en el grupo"
+        if msg.edited:
+            why = f"Es una edición: le agregó un link a un mensaje que ya estaba. {why}"
+            reason = "link agregado al editar un mensaje"
         return _punish(msg, m, ctx, d, why, reason)
 
     # 2. Reenvíos de canal.

@@ -42,6 +42,8 @@ class Moderator:
             case ButtonPressed():
                 names.check(event.user, ctx, d)
                 verification.on_button(event, ctx, d)
+            case Message() if event.edited:
+                self._on_edit(event, ctx, d)
             case Message():
                 self._on_message(event, ctx, d)
             case StaffList():
@@ -94,6 +96,21 @@ class Moderator:
             if rule(msg, m, ctx, d):
                 return
         d.passed("resultado", "Ningún filtro saltó: el mensaje queda.")
+
+    def _on_edit(self, msg: Message, ctx: Ctx, d: Decision) -> None:
+        """Alguien editó un mensaje que ya estaba en el grupo. Lo único que
+        una edición puede meter es un link, así que pasa solo por el
+        anti-links. El anti-flood y el anti-repetición no aplican: editar no
+        manda nada nuevo ni sube el aviso en el chat. Tampoco los comandos.
+
+        Sin mirar permisos: si la edición llegó, Telegram la dejó pasar."""
+        names.check(msg.user, ctx, d)
+        m = ctx.state.member(msg.user)
+        if msg.user.is_admin:
+            d.passed("admins", f"{msg.user.name} es admin: los filtros no se le aplican.")
+            return
+        if not links.check(msg, m, ctx, d):
+            d.passed("resultado", "La edición no metió nada prohibido: el mensaje queda.")
 
     def _on_tick(self, ctx: Ctx, d: Decision) -> None:
         kicked = verification.expire(ctx, d)

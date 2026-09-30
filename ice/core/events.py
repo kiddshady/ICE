@@ -72,6 +72,10 @@ class Message:
     # es el del álbum; si no tiene, el adaptador pone ahí qué fotos son, así
     # el mismo álbum reenviado cuenta como repetido.
     album: tuple[int, ...] = ()
+    # Es una edición de un mensaje que ya estaba (update edited_message): el
+    # texto es el nuevo. El truco clásico es publicar algo limpio y después
+    # meterle un link editando.
+    edited: bool = False
 
     @property
     def ids(self) -> tuple[int, ...]:

@@ -263,12 +263,13 @@ function msgNode(m) {
   const node = h("div", { class: `msg ${isBot ? "bot" : ""}`, style: `--hue:${hue(m.user_id)}` },
     h("div", { class: "msg-head" },
       h("span", { class: "msg-name" }, m.name),
+      h("span", { class: "msg-edited", hidden: !m.edited }, "editado"),
       h("span", { class: "msg-time mono" }, clock(m.at))),
     m.forwarded && h("div", { class: "msg-tag" }, icon("forward"), "Reenviado de un canal"),
     m.reply && h("div", { class: "quote" }, h("b", {}, m.reply.name), " ", m.reply.text),
     m.photos && h("div", { class: "msg-tag" }, icon("album"), `Álbum de ${m.photos.length} fotos`),
     m.photos && h("div", { class: "album" }, m.photos.map(() => h("span", { class: "album-tile" }))),
-    m.text ? h("div", { class: "msg-text" }, m.text) : null,
+    h("div", { class: "msg-text" }, m.text),  // vacío en un álbum sin texto: no se ve
     m.button && h("button", {
       class: "msg-button", type: "button",
       onclick: () => send({ op: "press", user: active, data: m.button.data }),
@@ -281,6 +282,7 @@ function msgNode(m) {
         renderComposer(); $("#text").focus();
       },
     }, icon("reply")));
+  node.shownText = m.text;
   return node;
 }
 
@@ -289,6 +291,13 @@ function renderChat() {
   let added = 0;
   snap.chat.forEach((m, i) => {
     let node = chatNodes[i];
+    // Un mensaje editado cambia el texto en el lugar, sin rearmarse: así el
+    // borrado que venga con la edición entra con su transición.
+    if (node && m.kind === "user" && node.shownText !== m.text) {
+      node.querySelector(".msg-text").textContent = m.text;
+      node.querySelector(".msg-edited").hidden = !m.edited;
+      node.shownText = m.text;
+    }
     if (!node) {
       node = msgNode(m);
       chatNodes[i] = node;
@@ -449,6 +458,12 @@ document.querySelector(".quick").addEventListener("click", (e) => {
   if (q === "link") send({ op: "send", user: active, text: "miren esto: www.cripto-gratis.xyz", forwarded });
   if (q === "rules") send({ op: "send", user: active, text: "/reglas" });
   if (q === "staff") send({ op: "send", user: active, text: "/staff@ice_bot" });
+  if (q === "edit") {
+    const last = snap.chat.findLast((m) => m.kind === "user" && m.user_id === active && !m.deleted);
+    const name = snap.people.find((p) => p.id === active).name;
+    if (last) send({ op: "edit", user: active, msg_id: last.msg_id, text: `${last.text} Más fotos en www.cripto-gratis.xyz`.trim() });
+    else toast(`${name} no tiene mensajes en el grupo para editar.`);
+  }
   if (q === "repeat") {
     // El último mensaje de esta persona que quedó en el grupo.
     const last = snap.chat.findLast((m) => m.kind === "user" && m.user_id === active && !m.deleted);

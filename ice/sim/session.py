@@ -114,6 +114,8 @@ class Session:
             notice = self._send(self._person(cmd), str(cmd.get("text", "")),
                                 cmd.get("reply_to"), bool(cmd.get("forwarded")),
                                 photos=[str(x) for x in cmd.get("photos") or []] or 6)
+        elif op == "edit":
+            notice = self._edit(self._person(cmd), cmd.get("msg_id"), str(cmd.get("text", "")))
         elif op == "burst":
             notice = self._burst(self._person(cmd))
         elif op == "press":
@@ -195,6 +197,25 @@ class Session:
             "forwarded": forwarded, "reply": self._reply_view(target),
             "deleted": False, "at": self.now,
         })
+        self._apply(d)
+        return None
+
+    def _edit(self, p: Person, msg_id: Any, text: str) -> str | None:
+        """Edita un mensaje suyo que sigue en el grupo. A diferencia de uno
+        nuevo, no pasa por los permisos: si Telegram deja editar, llega."""
+        item = self._find_msg(msg_id)
+        text = text.strip()
+        if (item is None or item["kind"] != "user" or item["user_id"] != p.user.id
+                or item["deleted"] or not text or text == item["text"]):
+            return None
+        photos = item.get("photos") or []
+        ids = tuple(range(item["msg_id"], item["msg_id"] + len(photos))) if photos else ()
+        msg = Message(id=item["msg_id"], user=p.user, text=text, album=ids, edited=True)
+        d = self.mod.handle(msg, self.now)
+        short = text if len(text) <= 40 else text[:39] + "..."
+        self._trace(f"{p.user.name} edita su mensaje: {short}", "message", d)
+        item["text"] = text
+        item["edited"] = True
         self._apply(d)
         return None
 

@@ -99,6 +99,13 @@ Telegram no le avisa al bot cuando alguien se cambia el nombre. El bot lo nota
 recién cuando esa persona escribe, toca un botón o alguien le responde un
 mensaje.
 
+**Las ediciones también se miran.** El truco es publicar algo limpio y
+después meterle un link editando. Una edición pasa solo por el anti-links:
+si agrega un link, se borra y suma una advertencia («link agregado al editar
+un mensaje»); si es el texto de un álbum, se borra el álbum entero. El
+anti-flood y el anti-repetición no aplican (editar no manda nada nuevo ni
+sube el aviso en el chat) y una edición tampoco ejecuta comandos.
+
 **Un álbum de fotos es un solo aviso.** Telegram lo manda como un mensaje
 por foto; el adaptador espera a que lleguen todas (un segundo y medio desde
 la última) y se lo pasa al cerebro como uno. Así un álbum de 10 fotos cuenta
@@ -171,7 +178,5 @@ cosa ya tiene su mensaje. Para saber el id de tu chat privado, mandale
 
 ## Lo que falta
 
-- **Mensajes editados**: el bot no los mira, así que un link agregado
-  editando pasa.
 - **Desafíos de verificación tras un reinicio**: si el bot se corta con uno
   abierto, ese mensaje queda en el grupo (la cuenta igual sale a su hora).

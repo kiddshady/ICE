@@ -32,11 +32,15 @@ from . import translate
 # Telegram las manda todas juntas, en milisegundos: esto es margen de sobra.
 ALBUM_WAIT = 1.5
 
+# Cuántos álbumes recordar (los últimos), para que editar el texto de uno
+# borre el álbum entero. Son unos pocos números cada uno.
+ALBUMS_KEPT = 2000
+
 # Cada cuánto se le avisa al cerebro que pasó el tiempo: es lo que hace vencer
 # las verificaciones. Unos segundos de más en un plazo de 2 minutos no importan.
 TICK_EVERY = 5
 
-UPDATES = ["message", "callback_query", "chat_member", "my_chat_member"]
+UPDATES = ["message", "edited_message", "callback_query", "chat_member", "my_chat_member"]
 
 MUTED = ChatPermissions(**{name: False for name in ChatPermissions.model_fields})
 
@@ -93,11 +97,14 @@ class ICE:
         self.notify_chat = notify_chat
         self.groups: dict[int, Group] = {}
         self.albums: dict[tuple[int, str], Album] = {}
+        # Los álbumes ya cerrados: (grupo, media_group_id) -> ids de sus fotos.
+        self.album_ids: dict[tuple[int, str], tuple[int, ...]] = {}
         self.me: TgUser | None = None
 
         r = Router()
         groups = F.chat.type.in_({"group", "supergroup"})
         r.message.register(self.on_message, groups)
+        r.edited_message.register(self.on_edit, groups)
         r.message.register(self.on_private, F.chat.type == "private")
         r.callback_query.register(self.on_button)
         r.chat_member.register(self.on_member, groups)
@@ -245,8 +252,12 @@ class ICE:
         while (left := album.last + ALBUM_WAIT - time.monotonic()) > 0:
             await asyncio.sleep(left)
         del self.albums[key]
+        parts = sorted(album.parts, key=lambda m: m.message_id)
+        self.album_ids[key] = tuple(p.message_id for p in parts)
+        if len(self.album_ids) > ALBUMS_KEPT:
+            del self.album_ids[next(iter(self.album_ids))]  # el más viejo
         try:
-            await self.consider(g, sorted(album.parts, key=lambda m: m.message_id))
+            await self.consider(g, parts)
         except Exception as e:  # es una tarea suelta: si falla, que se vea
             log(f"[{g.title}] Error con un álbum: {e!r}")
 
@@ -269,6 +280,21 @@ class ICE:
             forwarded_from_channel=any(translate.from_channel(p) for p in parts),
             hidden_links=tuple(link for p in parts for link in translate.hidden_links(p)),
             album=tuple(p.message_id for p in parts) if len(parts) > 1 else ()))
+
+    async def on_edit(self, m: TgMessage) -> None:
+        """Alguien editó un mensaje. Llega con el texto nuevo; si es la foto
+        de un álbum, se le pasan al cerebro los ids de todo el álbum, para
+        que si hay que borrar, se borre entero."""
+        g = await self.group(m.chat.id)
+        if not translate.is_user_content(m):
+            return
+        who = self.sender(g, m)
+        if who is None:
+            return
+        album = self.album_ids.get((g.id, m.media_group_id), ()) if m.media_group_id else ()
+        await self.feed(g, Message(
+            id=m.message_id, user=who, text=translate.text_of(m),
+            hidden_links=translate.hidden_links(m), album=album, edited=True))
 
     async def on_private(self, m: TgMessage) -> None:
         """Por privado ICE no modera nada: solo dice el id del chat, que es lo
