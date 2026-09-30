@@ -39,7 +39,7 @@ def check(msg: Message, m: Member, ctx: Ctx, d: Decision) -> bool:
     d.do(
         DeleteMessage(msg.id),
         Restrict(u, until=until),
-        Say(f"{u.name}: demasiados mensajes seguidos. Escritura restringida por "
+        Say(f"🔇 {u.name}: demasiados mensajes seguidos. Escritura restringida por "
             f"{duration(cfg.flood_mute)}."),
         Log(f"{u.name}: flood ({count} mensajes en {window}). "
             f"Silencio de {duration(cfg.flood_mute)}."),

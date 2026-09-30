@@ -44,10 +44,10 @@ def on_join(ev: Joined, ctx: Ctx, d: Decision) -> None:
     key = challenge_key(u.id)
     d.do(
         Restrict(u, until=None),
-        Say(f"{u.name}: verificación pendiente. Para habilitar la escritura, "
+        Say(f"🔐 {u.name}: verificación pendiente. Para habilitar la escritura, "
             f"presionar el botón dentro de {duration(timeout)}. Sin verificación, "
             "la cuenta se retira del grupo.",
-            button=Button("Verificar", key), key=key),
+            button=Button("✅ Verificar", key), key=key),
         Log(f"{u.name} entró. Esperando verificación."),
     )
     d.hit(RULE, f"Entró alguien nuevo: queda sin permiso de escribir hasta que "
@@ -62,14 +62,14 @@ def on_button(ev: ButtonPressed, ctx: Ctx, d: Decision) -> None:
 
     target_id = int(raw)
     if ev.user.id != target_id:
-        d.do(Toast("Este botón corresponde a otra cuenta."))
+        d.do(Toast("🚫 Este botón corresponde a otra cuenta."))
         d.info(RULE, f"{ev.user.name} tocó el botón de otra persona: no cuenta. "
                      "Solo le aparece un aviso a quien lo tocó.")
         return
 
     m = ctx.state.members.get(target_id)
     if m is None or m.verify_deadline is None:
-        d.do(Toast("La verificación ya estaba completa."))
+        d.do(Toast("ℹ️ La verificación ya estaba completa."))
         d.info(RULE, "Ya había pasado la verificación: no hay nada que hacer.")
         return
 
@@ -78,8 +78,8 @@ def on_button(ev: ButtonPressed, ctx: Ctx, d: Decision) -> None:
     d.do(
         Unrestrict(u),
         Unsay(challenge_key(u.id)),
-        Toast("Verificación completa. Escritura habilitada."),
-        Say(f"{u.name}: verificación completa. Las reglas del grupo se consultan con /reglas."),
+        Toast("✅ Verificación completa. Escritura habilitada."),
+        Say(f"✅ {u.name}: verificación completa. Las reglas del grupo se consultan con /reglas."),
         Log(f"{u.name} se verificó."),
     )
     d.passed(RULE, f"{u.name} tocó su botón a tiempo: recupera el permiso de "
