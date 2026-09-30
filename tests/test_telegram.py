@@ -1,7 +1,11 @@
 """La traducción de Telegram a eventos. Necesita aiogram (requirements.txt);
 sin él, estos tests se saltean y el resto sigue andando."""
+import json
+import tempfile
+import time
 import unittest
 from datetime import datetime
+from pathlib import Path
 
 try:
     from aiogram.types import (Chat, ChatMemberAdministrator, ChatMemberBanned, ChatMemberLeft,
@@ -10,6 +14,7 @@ try:
     from aiogram.types import Message as TgMessage, User as TgUser
 
     from ice.tg import translate
+    from ice.tg.bot import SAID_KEPT, Group
 except ImportError:
     translate = None
 
@@ -97,3 +102,24 @@ class Messages(unittest.TestCase):
     def test_service_messages_are_not_messages(self):
         self.assertFalse(translate.is_user_content(message(new_chat_members=[USER])))
         self.assertTrue(translate.is_user_content(message(text="hola")))
+
+
+@unittest.skipIf(translate is None, "falta aiogram")
+class ChallengesSurviveRestart(unittest.TestCase):
+    def open(self, folder: Path):
+        g = Group(-100, folder / "-100.db")
+        self.addCleanup(g.mod.store.close)
+        return g
+
+    def test_challenge_message_is_remembered_after_restart(self):
+        folder = Path(tempfile.mkdtemp())
+        self.open(folder).remember("verify:7", 501)
+        again = self.open(folder)  # el bot arrancó de nuevo
+        self.assertEqual(again.recall("verify:7"), 501)
+        self.assertIsNone(self.open(folder).recall("verify:7"))  # ya se borró
+
+    def test_messages_too_old_to_delete_are_forgotten(self):
+        folder = Path(tempfile.mkdtemp())
+        old = time.time() - SAID_KEPT - 60
+        (folder / "-100.said.json").write_text(json.dumps({"verify:7": [501, old]}))
+        self.assertIsNone(self.open(folder).recall("verify:7"))

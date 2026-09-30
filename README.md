@@ -170,13 +170,15 @@ Telegram lo convierte.
 Para probarlo hace falta una segunda cuenta: el bot no modera al dueño ni a
 los admins.
 
-La memoria queda en `data/<id del grupo>.db`, una por grupo. Con
-`ICE_NOTIFY_CHAT` el bot avisa en ese chat cada vez que se conecta. El
+La memoria queda en `data/<id del grupo>.db`, una por grupo. Al lado,
+`<id>.said.json` anota qué mensaje es cada desafío de verificación, para
+poder borrarlo aunque el bot se haya reiniciado en el medio.
+
+Con `ICE_NOTIFY_CHAT` el bot avisa en ese chat cada vez que se conecta. El
 registro (quién entró, a quién sancionó) sale en la consola: en el grupo cada
 cosa ya tiene su mensaje. Para saber el id de tu chat privado, mandale
 `/start` al bot por privado: te lo contesta.
 
 ## Lo que falta
 
-- **Desafíos de verificación tras un reinicio**: si el bot se corta con uno
-  abierto, ese mensaje queda en el grupo (la cuenta igual sale a su hora).
+Nada anotado por ahora.

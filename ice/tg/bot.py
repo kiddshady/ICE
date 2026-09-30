@@ -9,6 +9,8 @@ Un cerebro por grupo, cada uno con su memoria en `data/<id del grupo>.db`.
 from __future__ import annotations
 
 import asyncio
+import json
+import os
 import platform
 import time
 from pathlib import Path
@@ -35,6 +37,10 @@ ALBUM_WAIT = 1.5
 # Cuántos álbumes recordar (los últimos), para que editar el texto de uno
 # borre el álbum entero. Son unos pocos números cada uno.
 ALBUMS_KEPT = 2000
+
+# Telegram no deja que un bot borre mensajes de más de 48 h: pasado eso, no
+# tiene sentido seguir recordando cuál era cada uno.
+SAID_KEPT = 48 * 3600
 
 # Cada cuánto se le avisa al cerebro que pasó el tiempo: es lo que hace vencer
 # las verificaciones. Unos segundos de más en un plazo de 2 minutos no importan.
@@ -76,9 +82,38 @@ class Group:
         self.admins: set[int] = set()
         self.staff_loaded = False
         # Los mensajes que el bot mandó con Say(key=...), para poder borrarlos
-        # con Unsay. Viven en memoria: si el bot se reinicia con un desafío de
-        # verificación abierto, ese mensaje queda y hay que borrarlo a mano.
-        self.said: dict[str, int] = {}
+        # con Unsay: clave -> [id del mensaje, cuándo se mandó]. Se guardan al
+        # lado de la memoria del grupo, así un desafío de verificación que
+        # quedó abierto cuando el bot se cortó se borra igual a su hora.
+        self.said_file = db.with_name(f"{chat_id}.said.json")
+        self.said: dict[str, list[float]] = self._load_said()
+
+    def _load_said(self) -> dict[str, list[float]]:
+        try:
+            said = json.loads(self.said_file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+        now = time.time()
+        return {k: v for k, v in said.items() if now - v[1] < SAID_KEPT}
+
+    def _save_said(self) -> None:
+        # Se escribe aparte y se reemplaza de una: si el bot se corta en el
+        # medio, queda el archivo anterior entero, no uno a medio escribir.
+        tmp = self.said_file.with_suffix(".tmp")
+        tmp.write_text(json.dumps(self.said), encoding="utf-8")
+        os.replace(tmp, self.said_file)
+
+    def remember(self, key: str, message_id: int) -> None:
+        self.said[key] = [message_id, time.time()]
+        self._save_said()
+
+    def recall(self, key: str) -> int | None:
+        """El id del mensaje con esa clave, y lo olvida: se va a borrar."""
+        entry = self.said.pop(key, None)
+        if entry is None:
+            return None
+        self._save_said()
+        return int(entry[0])
 
 
 class Album:
@@ -183,8 +218,8 @@ class ICE:
         g = self.groups.pop(chat_id, None)
         if g is not None:
             g.mod.store.close()
-        for suffix in ("", "-wal", "-shm"):
-            (self.data / f"{chat_id}.db{suffix}").unlink(missing_ok=True)
+        for name in (".db", ".db-wal", ".db-shm", ".said.json"):
+            (self.data / f"{chat_id}{name}").unlink(missing_ok=True)
         log(f"El grupo {chat_id} pasó a ser supergrupo: se borra su memoria vieja.")
 
     async def refresh_staff(self, g: Group, warn: bool = True) -> None:
@@ -385,9 +420,9 @@ class ICE:
                         InlineKeyboardButton(text=a.button.label, callback_data=a.button.data)
                     ]]) if a.button else None))
                 if a.key:
-                    g.said[a.key] = sent.message_id
+                    g.remember(a.key, sent.message_id)
             case Unsay():
-                msg_id = g.said.pop(a.key, None)
+                msg_id = g.recall(a.key)
                 if msg_id is not None:
                     await bot.delete_message(chat, msg_id)
             case Log():
