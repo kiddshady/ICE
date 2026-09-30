@@ -59,7 +59,7 @@ def ban_text(who: str, reason: str) -> str:
 
 def staff_text(staff: list[User]) -> str:
     """El cartel de /staff: fundador, admins y bots, cada grupo con su título.
-    Un grupo vacío no se muestra."""
+    Un grupo vacío no se muestra. Los anónimos ya vienen filtrados."""
     def line(u: User) -> str:
         return f"{u.name} (@{u.username})" if u.username else u.name
 
@@ -110,6 +110,8 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
         # nuevo. El rol sigue saliendo de la lista de Telegram.
         staff = []
         for u in ctx.state.staff:
+            if u.is_anonymous:
+                continue
             seen = ctx.state.members.get(u.id)
             staff.append(replace(u, name=seen.user.name, username=seen.user.username)
                          if seen else u)
@@ -118,6 +120,11 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
                        f"({len(staff)} cuentas). Sale de getChatAdministrators, no de "
                        "los que el bot vio escribir, así que aparecen hasta los que "
                        "nunca hablaron.")
+        hidden = len(ctx.state.staff) - len(staff)
+        if hidden:
+            d.info(RULE, f"{hidden} en modo anónimo no aparece{'n' if hidden > 1 else ''}: "
+                         "Telegram igual los lista, pero eligieron no mostrarse en el "
+                         "grupo y el bot respeta eso.")
         return
 
     # De acá para abajo, comandos de moderación.

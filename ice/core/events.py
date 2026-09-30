@@ -21,6 +21,10 @@ class User:
     is_owner: bool = False
     # Una cuenta de bot. Telegram lo marca en cada usuario (User.is_bot).
     is_bot: bool = False
+    # Admin en modo anónimo (is_anonymous en getChatAdministrators): en el
+    # grupo escribe con el nombre del grupo y no con el suyo. Eligió no
+    # mostrarse, así que el bot no lo nombra.
+    is_anonymous: bool = False
 
 
 @dataclass(frozen=True)

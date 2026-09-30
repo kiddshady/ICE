@@ -158,6 +158,17 @@ class Staff(unittest.TestCase):
         g.say(User(5, "Valentina", is_admin=True, username="vale"), "hola")
         self.assertIn("Valentina (@vale)", g.say(OLD, "/staff").actions[0].text)
 
+    def test_anonymous_admins_are_not_shown(self):
+        g = Group()
+        ghost = User(7, "Sombra", is_admin=True, username="sombra", is_anonymous=True)
+        anon_owner = User(1, "Fran", is_admin=True, username="fran",
+                          is_owner=True, is_anonymous=True)
+        g.handle(StaffList((anon_owner, MOD, ghost, BOT)))
+        text = g.say(OLD, "/staff").actions[0].text
+        self.assertNotIn("Sombra", text)
+        self.assertNotIn("Fundador", text)
+        self.assertIn("Vale (@vale)", text)
+
     def test_without_list_says_so(self):
         d = Group().say(OLD, "/staff")
         self.assertIn("no disponible", d.actions[0].text)
