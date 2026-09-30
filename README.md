@@ -3,8 +3,8 @@
 Bot moderador para grupos de Telegram. En *Neuromante*, el ICE es el hielo
 que protege un sistema de los intrusos; este protege un grupo del spam.
 
-Por ahora tiene **el cerebro** (las reglas) y **un simulador** para verlo
-trabajar sin Telegram. La conexión con Telegram es el paso siguiente.
+Tiene **el cerebro** (las reglas), **un simulador** para verlo trabajar sin
+Telegram y **el adaptador** que lo pone en un grupo de verdad.
 
 **Supuesto de base: un grupo de compra-venta y servicios.** Nadie charla,
 cada mensaje es un aviso. Las reglas y sus números están pensados para eso,
@@ -46,6 +46,9 @@ ice/
       warns.py         advertencias (3 = silencio)
       names.py         avisa cuando alguien se cambia el nombre
       commands.py      /warn /mute /ban y compañía
+  tg/                  el bot de verdad: python -m ice.tg
+    bot.py             updates de Telegram -> eventos, acciones -> API
+    translate.py       las traducciones que no tocan la red (con tests)
   sim/                 el grupo de mentira
     session.py         arma eventos, llama al cerebro, aplica las acciones
     __main__.py        el servidor web del simulador
@@ -129,13 +132,35 @@ anti-flood y los textos del anti-repetición no se guardan: duran minutos.
 El bot de verdad tiene que pasarle `time.time()` como hora. Así un silencio o
 una verificación vencen a su hora aunque el bot haya estado apagado.
 
+## Ponerlo en un grupo de Telegram
+
+1. **Crear el bot.** En Telegram, hablale a @BotFather: `/newbot`, un nombre
+   y un @usuario que termine en `bot`. Te da un token.
+2. **Configurar.** Copiá `.env.example` como `.env` y poné el token en
+   `ICE_TOKEN`. El `.env` no se sube al repo.
+3. **Instalar** (una sola vez): `pip install -r requirements.txt`.
+4. **Arrancar:** `python -m ice.tg`. Queda escuchando hasta que lo cortes con
+   Ctrl+C. Lo que hace sale en la consola.
+5. **Sumarlo al grupo y hacerlo admin**, con permiso para borrar mensajes y
+   para banear. Sin eso no ve los mensajes ni puede sancionar.
+
+Restringir solo anda en **supergrupos**. Si la consola avisa que es un grupo
+básico: Editar grupo > Historial del chat para nuevos miembros > Visible, y
+Telegram lo convierte.
+
+Para probarlo hace falta una segunda cuenta: el bot no modera al dueño ni a
+los admins.
+
+La memoria queda en `data/<id del grupo>.db`, una por grupo. Con
+`ICE_LOG_CHAT` el bot avisa en ese chat cada vez que se conecta y le manda
+el registro. Para saber el id de tu chat privado, mandale `/start` al bot por
+privado: te lo contesta.
+
 ## Lo que falta
 
-- **Conectarlo a Telegram**: un adaptador con [aiogram](https://aiogram.dev)
-  que traduzca los updates a eventos y las acciones a llamadas a la API.
-  Cada acción ya dice qué método usa (`actions.py`, campo `api`).
-- **Un temporizador** que mande `Tick` cada pocos segundos, para que venzan
-  las verificaciones.
-
-Para probarlo en un grupo de verdad hace falta una segunda cuenta de
-Telegram: el bot no modera al dueño ni a los admins.
+- **Albums de fotos**: un aviso de 6 fotos o más llega como 6 mensajes
+  seguidos y hoy salta el anti-flood.
+- **Mensajes editados**: el bot no los mira, así que un link agregado
+  editando pasa.
+- **Desafíos de verificación tras un reinicio**: si el bot se corta con uno
+  abierto, ese mensaje queda en el grupo (la cuenta igual sale a su hora).

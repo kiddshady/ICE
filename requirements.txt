@@ -1,0 +1,3 @@
+# Solo para el bot de verdad (python -m ice.tg). El simulador y los tests del
+# cerebro no necesitan nada.
+aiogram>=3.31,<4
