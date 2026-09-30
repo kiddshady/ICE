@@ -26,6 +26,13 @@ class User:
     # mostrarse, así que el bot no lo nombra.
     is_anonymous: bool = False
 
+    @property
+    def tag(self) -> str:
+        """Cómo lo nombra el bot en el grupo: el nombre y el id entre
+        corchetes. El nombre se cambia cuando uno quiere; el id no, así que
+        con él se sigue a una cuenta aunque aparezca con otro nombre."""
+        return f"{self.name} [{self.id}]"
+
 
 @dataclass(frozen=True)
 class Joined:

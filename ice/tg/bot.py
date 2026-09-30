@@ -74,10 +74,10 @@ class Group:
 
 
 class ICE:
-    def __init__(self, bot: Bot, data: Path, log_chat: int | None) -> None:
+    def __init__(self, bot: Bot, data: Path, notify_chat: int | None) -> None:
         self.bot = bot
         self.data = data
-        self.log_chat = log_chat
+        self.notify_chat = notify_chat
         self.groups: dict[int, Group] = {}
         self.me: TgUser | None = None
 
@@ -141,15 +141,16 @@ class ICE:
         return g
 
     async def announce(self) -> None:
-        """Avisa en el chat de registro que ICE se conectó."""
-        if self.log_chat is None:
+        """Avisa por ICE_NOTIFY_CHAT que ICE se conectó. Es lo único que
+        manda ahí: lo que pasa en el grupo ya lo cuenta en el grupo."""
+        if self.notify_chat is None:
             return
         try:
             await self.bot.send_message(
-                self.log_chat,
+                self.notify_chat,
                 f"🟢 ICE ONLINE\nNode: {platform.node()}\nTime: {time.strftime('%H:%M:%S')}")
         except TelegramAPIError as e:
-            log(f"No pude avisar en ICE_LOG_CHAT ({self.log_chat}): {e}\n"
+            log(f"No pude avisar en ICE_NOTIFY_CHAT ({self.notify_chat}): {e}\n"
                 "  Si es un chat privado, primero hay que mandarle /start al bot: "
                 "Telegram no deja que un bot le escriba a alguien que nunca le habló.")
 
@@ -231,9 +232,9 @@ class ICE:
 
     async def on_private(self, m: TgMessage) -> None:
         """Por privado ICE no modera nada: solo dice el id del chat, que es lo
-        que hace falta para ICE_LOG_CHAT."""
-        await m.answer(f"🆔 Este chat es el {m.chat.id}.\nPara que ICE mande acá el "
-                       f"registro y el aviso de conexión: ICE_LOG_CHAT={m.chat.id} en el .env.")
+        que hace falta para ICE_NOTIFY_CHAT."""
+        await m.answer(f"🆔 Este chat es el {m.chat.id}.\nPara que ICE avise acá cuando se "
+                       f"conecta: ICE_NOTIFY_CHAT={m.chat.id} en el .env.")
 
     async def on_button(self, q: CallbackQuery) -> None:
         if q.message is None or q.message.chat.type not in ("group", "supergroup"):
@@ -324,8 +325,8 @@ class ICE:
                 if msg_id is not None:
                     await bot.delete_message(chat, msg_id)
             case Log():
+                # Solo a la consola: cada Log ya tiene su mensaje en el grupo,
+                # salvo los cambios de nombre de admins, que no se anuncian.
                 log(f"[{g.title}] {a.text}")
-                if self.log_chat is not None:
-                    await bot.send_message(self.log_chat, f"[{g.title}] {a.text}")
             case Toast():
                 pass  # lo contesta on_button: va en la respuesta al botón

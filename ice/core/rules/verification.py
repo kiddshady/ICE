@@ -44,7 +44,7 @@ def on_join(ev: Joined, ctx: Ctx, d: Decision) -> None:
     key = challenge_key(u.id)
     d.do(
         Restrict(u, until=None),
-        Say(f"🔐 {u.name}: verificación pendiente. Para habilitar la escritura, "
+        Say(f"🔐 {u.tag}: verificación pendiente. Para habilitar la escritura, "
             f"presionar el botón dentro de {duration(timeout)}. Sin verificación, "
             "la cuenta se retira del grupo.",
             button=Button("✅ Verificar", key), key=key),
@@ -79,7 +79,7 @@ def on_button(ev: ButtonPressed, ctx: Ctx, d: Decision) -> None:
         Unrestrict(u),
         Unsay(challenge_key(u.id)),
         Toast("✅ Verificación completa. Escritura habilitada."),
-        Say(f"✅ {u.name}: verificación completa. Las reglas del grupo se consultan con /reglas."),
+        Say(f"✅ {u.tag}: verificación completa. Las reglas del grupo se consultan con /reglas."),
         Log(f"{u.name} se verificó."),
     )
     d.passed(RULE, f"{u.name} tocó su botón a tiempo: recupera el permiso de "
@@ -103,6 +103,7 @@ def expire(ctx: Ctx, d: Decision) -> bool:
         u = m.user
         del ctx.state.members[u.id]
         d.do(Kick(u), Unsay(challenge_key(u.id)),
+             Say(f"🚪 {u.tag}: sin verificación a tiempo. La cuenta se retiró del grupo."),
              Log(f"{u.name} no se verificó a tiempo. Fuera del grupo."))
         d.hit(RULE, f"{u.name} no tocó el botón en {duration(ctx.config.verify_timeout)}: "
                     "afuera. Es un kick, no un ban: puede volver a intentar.")

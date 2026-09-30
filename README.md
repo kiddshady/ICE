@@ -106,8 +106,12 @@ poniendo su **@usuario** primero (`/ban @Laura ofrecer servicios sexuales`).
 El @ solo anda con cuentas que el bot ya vio escribir o entrar: Telegram no le
 deja a un bot buscar a alguien por su @usuario. Para las demás, respondiendo.
 
-El aviso del ban lleva el motivo si lo hay («Laura recibió un ban permanente
-por ofrecer servicios sexuales.») y, si no, solo avisa el ban.
+El aviso del ban lleva el motivo si lo hay («Laura [5] recibió un ban
+permanente por ofrecer servicios sexuales.») y, si no, solo avisa el ban.
+
+Todo mensaje del bot que nombra a alguien pone su id entre corchetes al lado
+del nombre. El nombre se cambia cuando uno quiere; el id no, así que con él
+se sigue a una cuenta aunque aparezca con otro nombre.
 Además, el ban borra todos los mensajes que esa cuenta mandó al grupo
 (`revoke_messages` de Telegram). No se puede deshacer: un `/unban` no los
 devuelve.
@@ -152,9 +156,10 @@ Para probarlo hace falta una segunda cuenta: el bot no modera al dueño ni a
 los admins.
 
 La memoria queda en `data/<id del grupo>.db`, una por grupo. Con
-`ICE_LOG_CHAT` el bot avisa en ese chat cada vez que se conecta y le manda
-el registro. Para saber el id de tu chat privado, mandale `/start` al bot por
-privado: te lo contesta.
+`ICE_NOTIFY_CHAT` el bot avisa en ese chat cada vez que se conecta. El
+registro (quién entró, a quién sancionó) sale en la consola: en el grupo cada
+cosa ya tiene su mensaje. Para saber el id de tu chat privado, mandale
+`/start` al bot por privado: te lo contesta.
 
 ## Lo que falta
 

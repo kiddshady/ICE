@@ -14,7 +14,7 @@ class Names(unittest.TestCase):
         g = Group()
         d = g.say(CAMILA, "vendo mesa")
         self.assertEqual(kinds(d), ["Say", "Log"])
-        self.assertIn("«Cami» ahora figura como «Camila»", d.actions[0].text)
+        self.assertIn("«Cami» ahora figura como «Camila» [2]", d.actions[0].text)
         self.assertEqual(g.member(OLD).user.name, "Camila")
 
     def test_announced_only_once(self):

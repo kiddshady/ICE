@@ -36,7 +36,7 @@ def check(user: User, ctx: Ctx, d: Decision) -> None:
         return
 
     d.do(
-        Say(f"✏️ Cambio de nombre: «{old}» ahora figura como «{user.name}»."),
+        Say(f"✏️ Cambio de nombre: «{old}» ahora figura como «{user.name}» [{user.id}]."),
         Log(f"Cambio de nombre: «{old}» ahora figura como «{user.name}»."),
     )
     d.hit(RULE, f"El bot la tenía anotada como {old} y ahora escribe como "

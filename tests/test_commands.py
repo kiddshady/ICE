@@ -67,23 +67,23 @@ class BanByUsername(unittest.TestCase):
         d = g.say(ADMIN, "/ban @Cami ofrecer servicios sexuales")
         self.assertEqual(kinds(d), ["Ban", "Say", "Log"])
         self.assertEqual(d.actions[1].text,
-                         "🔨 Cami recibió un ban permanente por ofrecer servicios sexuales.")
+                         "🔨 Cami [2] recibió un ban permanente por ofrecer servicios sexuales.")
         self.assertIn(OLD.id, g.mod.state.banned)
 
     def test_ban_without_reason_does_not_mention_one(self):
         g = Group()
         d = g.say(ADMIN, "/ban @cami")
-        self.assertEqual(d.actions[1].text, "🔨 Cami recibió un ban permanente.")
+        self.assertEqual(d.actions[1].text, "🔨 Cami [2] recibió un ban permanente.")
 
     def test_reason_starting_with_por_is_not_doubled(self):
         g = Group()
         d = g.say(ADMIN, "/ban @cami Por spam")
-        self.assertEqual(d.actions[1].text, "🔨 Cami recibió un ban permanente por spam.")
+        self.assertEqual(d.actions[1].text, "🔨 Cami [2] recibió un ban permanente por spam.")
 
     def test_ban_by_reply_takes_the_reason_too(self):
         g = Group()
         d = g.say(ADMIN, "/ban vender armas", reply_to=(1, OLD))
-        self.assertEqual(d.actions[1].text, "🔨 Cami recibió un ban permanente por vender armas.")
+        self.assertEqual(d.actions[1].text, "🔨 Cami [2] recibió un ban permanente por vender armas.")
 
     def test_ban_wipes_their_messages(self):
         g = Group()

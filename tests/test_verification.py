@@ -41,7 +41,7 @@ class Verification(unittest.TestCase):
         g.handle(Joined(NEW))
         self.assertEqual(kinds(g.at(119).handle(Tick())), [])
         d = g.at(2).handle(Tick())
-        self.assertEqual(kinds(d), ["Kick", "Unsay", "Log"])
+        self.assertEqual(kinds(d), ["Kick", "Unsay", "Say", "Log"])
         self.assertIsNone(g.member(NEW))
 
     def test_admin_skips_verification(self):

@@ -20,7 +20,7 @@ def add_warn(m: Member, reason: str, ctx: Ctx, d: Decision) -> None:
         m.muted_until = until
         d.do(
             Restrict(u, until=until),
-            Say(f"🔇 {u.name}: advertencia {cfg.max_warns}/{cfg.max_warns} ({reason}). "
+            Say(f"🔇 {u.tag}: advertencia {cfg.max_warns}/{cfg.max_warns} ({reason}). "
                 f"Escritura restringida por {duration(cfg.warn_mute)}."),
             Log(f"{u.name}: advertencia {cfg.max_warns}/{cfg.max_warns} ({reason}). "
                 f"Silencio de {duration(cfg.warn_mute)}."),
@@ -29,7 +29,7 @@ def add_warn(m: Member, reason: str, ctx: Ctx, d: Decision) -> None:
                     f"{duration(cfg.warn_mute)} y el contador vuelve a 0.")
     else:
         d.do(
-            Say(f"⚠️ {u.name}: advertencia {m.warns}/{cfg.max_warns} ({reason})."),
+            Say(f"⚠️ {u.tag}: advertencia {m.warns}/{cfg.max_warns} ({reason})."),
             Log(f"{u.name}: advertencia {m.warns}/{cfg.max_warns} ({reason})."),
         )
         d.info(RULE, f"Suma {m.warns} de {cfg.max_warns}. A la "

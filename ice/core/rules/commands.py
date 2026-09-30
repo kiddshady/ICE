@@ -93,7 +93,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
             return
         who = who or u
         n = ctx.state.member(who).warns
-        d.do(Say(f"⚠️ {who.name}: {n}/{ctx.config.max_warns} advertencias.",
+        d.do(Say(f"⚠️ {who.tag}: {n}/{ctx.config.max_warns} advertencias.",
                  reply_to=msg.id))
         d.passed(RULE, f"/warns es público: {who.name} tiene {n}.")
         return
@@ -152,6 +152,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
 
     m = ctx.state.member(target)
     who = target.name
+    tag = target.tag  # en el grupo va con el id; en el registro, solo el nombre
 
     if cmd == "warn":
         d.passed(RULE, f"{u.name} es admin y le aplica /warn a {who}.")
@@ -160,7 +161,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
     elif cmd == "unwarn":
         before = m.warns
         m.warns = max(0, m.warns - 1)
-        d.do(Say(f"✅ {who}: advertencia retirada. Total: {m.warns}/{ctx.config.max_warns}."),
+        d.do(Say(f"✅ {tag}: advertencia retirada. Total: {m.warns}/{ctx.config.max_warns}."),
              Log(f"{u.name} le sacó una advertencia a {who} ({before} a {m.warns})."))
         d.passed(RULE, f"Advertencias de {who}: de {before} a {m.warns}.")
 
@@ -170,7 +171,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
         until = ctx.now + length
         m.muted_until = until
         d.do(Restrict(target, until=until),
-             Say(f"🔇 {who}: escritura restringida por {duration(length)}."),
+             Say(f"🔇 {tag}: escritura restringida por {duration(length)}."),
              Log(f"{u.name} silenció a {who} por {duration(length)}."))
         how = f"{minutes} min pedidos" if minutes else "sin número, va el default"
         d.hit(RULE, f"/mute a {who} por {duration(length)} ({how}). Telegram lo "
@@ -178,14 +179,14 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
 
     elif cmd == "unmute":
         m.muted_until = None
-        d.do(Unrestrict(target), Say(f"🔊 {who}: restricción de escritura retirada."),
+        d.do(Unrestrict(target), Say(f"🔊 {tag}: restricción de escritura retirada."),
              Log(f"{u.name} le sacó el silencio a {who}."))
         d.passed(RULE, f"/unmute: {who} recupera el permiso de escribir.")
 
     elif cmd == "ban":
         ctx.state.members.pop(target.id, None)
         ctx.state.banned[target.id] = target
-        d.do(Ban(target), Say(ban_text(who, arg)),
+        d.do(Ban(target), Say(ban_text(tag, arg)),
              Log(f"{u.name} baneó a {who}" + (f" ({arg})." if arg else ".")))
         why = f"El motivo va en el aviso: «{arg}»." if arg else "Sin motivo: el aviso no lo menciona."
         d.hit(RULE, f"/ban: {who} sale del grupo y no puede volver a entrar "
@@ -194,10 +195,10 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
 
     elif cmd == "unban":
         if ctx.state.banned.pop(target.id, None) is None:
-            d.do(Say(f"ℹ️ {who}: sin expulsión vigente.", reply_to=msg.id))
+            d.do(Say(f"ℹ️ {tag}: sin expulsión vigente.", reply_to=msg.id))
             d.info(RULE, f"{who} no tenía ban: nada que hacer.")
             return
-        d.do(Unban(target), Say(f"🔓 {who}: expulsión retirada. La cuenta puede volver a ingresar."),
+        d.do(Unban(target), Say(f"🔓 {tag}: expulsión retirada. La cuenta puede volver a ingresar."),
              Log(f"{u.name} desbaneó a {who}."))
         d.passed(RULE, f"/unban: {who} puede volver a entrar. No vuelve solo: "
                        "tiene que entrar de nuevo con el link del grupo.")

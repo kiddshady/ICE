@@ -39,13 +39,13 @@ def main() -> int:
         print("Falta el token. Copiá .env.example como .env y poné ICE_TOKEN "
               "(te lo da @BotFather).")
         return 1
-    log_chat = os.environ.get("ICE_LOG_CHAT", "").strip()
+    notify_chat = os.environ.get("ICE_NOTIFY_CHAT", "").strip()
     try:
         bot = Bot(token)
     except TokenValidationError:
         print("El token de ICE_TOKEN no tiene la forma de un token de @BotFather.")
         return 1
-    ice = ICE(bot, ROOT / "data", int(log_chat) if log_chat else None)
+    ice = ICE(bot, ROOT / "data", int(notify_chat) if notify_chat else None)
     try:
         asyncio.run(ice.run())
     except KeyboardInterrupt:
