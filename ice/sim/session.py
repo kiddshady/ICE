@@ -58,6 +58,7 @@ class Session:
         self.log: list[dict[str, Any]] = []
         self._next_msg = 1
         self._next_user = 1
+        self._next_photo = 1
         self._bot_msgs: dict[str, dict[str, Any]] = {}
 
         self._add("Fran", "admin, creó el grupo", admin=True, owner=True, present=True)
@@ -109,6 +110,10 @@ class Session:
         elif op == "send":
             notice = self._send(self._person(cmd), str(cmd.get("text", "")),
                                 cmd.get("reply_to"), bool(cmd.get("forwarded")))
+        elif op == "album":
+            notice = self._send(self._person(cmd), str(cmd.get("text", "")),
+                                cmd.get("reply_to"), bool(cmd.get("forwarded")),
+                                photos=[str(x) for x in cmd.get("photos") or []] or 6)
         elif op == "burst":
             notice = self._burst(self._person(cmd))
         elif op == "press":
@@ -150,27 +155,43 @@ class Session:
         self._trace(f"{p.user.name} se fue", "leave", d)
         self._apply(d)
 
-    def _send(self, p: Person, text: str, reply_to: Any, forwarded: bool) -> str | None:
+    def _send(self, p: Person, text: str, reply_to: Any, forwarded: bool,
+              photos: list[str] | int | None = None) -> str | None:
+        """Un mensaje, o un álbum si vienen `photos`: una lista de fotos (las
+        mismas de un álbum anterior, como al reenviarlo) o cuántas fotos
+        nuevas. En Telegram el álbum son varios mensajes; acá, como lo junta
+        el adaptador, le llega al cerebro como uno solo."""
         text = text.strip()
-        if not text:
+        if isinstance(photos, int):
+            photos = [f"foto{self._next_photo + i}" for i in range(photos)]
+            self._next_photo += len(photos)
+        if not text and not photos:
             return None
+        ids = tuple(range(self._next_msg, self._next_msg + len(photos))) if photos else ()
         target = self._find_msg(reply_to)
         msg = Message(
             id=self._next_msg,
             user=p.user,
-            text=text,
+            # Sin texto, qué fotos son: lo mismo que hace el adaptador.
+            text=text or f"[album {' '.join(photos)}]",
             reply_to=RepliedTo(target["msg_id"], self._user_of(target)) if target else None,
             forwarded_from_channel=forwarded,
+            album=ids,
         )
         d = self.mod.handle(msg, self.now)
         short = text if len(text) <= 40 else text[:39] + "..."
-        self._trace(f"{p.user.name} escribe: {short}", "message", d)
+        if photos:
+            title = f"{p.user.name} manda un álbum de {len(photos)} fotos" + (f": {short}" if text else "")
+        else:
+            title = f"{p.user.name} escribe: {short}"
+        self._trace(title, "message", d)
         if d.blocked:
             return "Telegram bloquea el mensaje: la cuenta tiene la escritura restringida."
-        self._next_msg += 1
+        self._next_msg += len(ids) or 1
         self.chat.append({
             "kind": "user", "msg_id": msg.id, "user_id": p.user.id,
             "name": p.user.name, "admin": p.user.is_admin, "text": text,
+            "photos": photos or None,
             "forwarded": forwarded, "reply": self._reply_view(target),
             "deleted": False, "at": self.now,
         })
@@ -219,7 +240,7 @@ class Session:
             match a:
                 case DeleteMessage():
                     for item in self.chat:
-                        if item.get("msg_id") == a.message_id:
+                        if item.get("msg_id") in a.message_ids:
                             item["deleted"] = True
                 case Kick():
                     self.people[a.user.id].present = False
@@ -271,7 +292,8 @@ class Session:
     def _reply_view(item: dict[str, Any] | None) -> dict[str, Any] | None:
         if not item:
             return None
-        return {"msg_id": item["msg_id"], "name": item["name"], "text": item["text"][:80]}
+        text = item["text"] or f"Álbum de {len(item['photos'])} fotos"
+        return {"msg_id": item["msg_id"], "name": item["name"], "text": text[:80]}
 
     def _trace(self, title: str, kind: str, d: Decision) -> None:
         self.traces.append({
@@ -288,7 +310,10 @@ class Session:
     def _describe(self, a: Any) -> str:
         match a:
             case DeleteMessage():
-                return f"borra el mensaje #{a.message_id}"
+                if len(a.message_ids) == 1:
+                    return f"borra el mensaje #{a.message_ids[0]}"
+                return (f"borra el álbum entero, de una: los mensajes "
+                        f"#{a.message_ids[0]} a #{a.message_ids[-1]}")
             case Restrict():
                 if a.until is None:
                     return f"{a.user.name} queda sin permiso de escribir, sin fecha de fin"

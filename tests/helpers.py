@@ -35,6 +35,13 @@ class Group:
         self._next += 1
         return self.handle(msg)
 
+    def album(self, user: User, photos: int, text: str = ""):
+        """Un álbum: llega al cerebro como un solo mensaje con los ids de
+        todas sus fotos, como lo junta el adaptador."""
+        ids = tuple(range(self._next, self._next + photos))
+        self._next += photos
+        return self.handle(Message(ids[0], user, text, album=ids))
+
     def join_verified(self, user: User) -> None:
         """Entra y toca su botón: queda como nuevo pero verificado."""
         from ice.core.events import ButtonPressed

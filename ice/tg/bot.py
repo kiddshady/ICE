@@ -28,6 +28,10 @@ from ..core.events import (ButtonPressed, Event, Joined, Left, Message, RepliedT
                            Tick, User)
 from . import translate
 
+# Cuánto se espera, desde la última foto de un álbum, a que lleguen las demás.
+# Telegram las manda todas juntas, en milisegundos: esto es margen de sobra.
+ALBUM_WAIT = 1.5
+
 # Cada cuánto se le avisa al cerebro que pasó el tiempo: es lo que hace vencer
 # las verificaciones. Unos segundos de más en un plazo de 2 minutos no importan.
 TICK_EVERY = 5
@@ -73,12 +77,22 @@ class Group:
         self.said: dict[str, int] = {}
 
 
+class Album:
+    """Las fotos de un álbum que van llegando, hasta que se completa."""
+
+    def __init__(self) -> None:
+        self.parts: list[TgMessage] = []
+        self.last = 0.0
+        self.task: asyncio.Task | None = None  # que el recolector no se pierda
+
+
 class ICE:
     def __init__(self, bot: Bot, data: Path, notify_chat: int | None) -> None:
         self.bot = bot
         self.data = data
         self.notify_chat = notify_chat
         self.groups: dict[int, Group] = {}
+        self.albums: dict[tuple[int, str], Album] = {}
         self.me: TgUser | None = None
 
         r = Router()
@@ -214,6 +228,31 @@ class ICE:
         g = await self.group(m.chat.id)
         if not translate.is_user_content(m):
             return
+        if m.media_group_id is None:
+            await self.consider(g, [m])
+            return
+        # Una foto de un álbum: se guarda hasta que lleguen las demás.
+        key = (g.id, m.media_group_id)
+        album = self.albums.get(key)
+        if album is None:
+            album = self.albums[key] = Album()
+            album.task = asyncio.create_task(self.close_album(g, key))
+        album.parts.append(m)
+        album.last = time.monotonic()
+
+    async def close_album(self, g: Group, key: tuple[int, str]) -> None:
+        album = self.albums[key]
+        while (left := album.last + ALBUM_WAIT - time.monotonic()) > 0:
+            await asyncio.sleep(left)
+        del self.albums[key]
+        try:
+            await self.consider(g, sorted(album.parts, key=lambda m: m.message_id))
+        except Exception as e:  # es una tarea suelta: si falla, que se vea
+            log(f"[{g.title}] Error con un álbum: {e!r}")
+
+    async def consider(self, g: Group, parts: list[TgMessage]) -> None:
+        """Le pasa al cerebro un mensaje, o un álbum entero como uno solo."""
+        m = parts[0]
         who = self.sender(g, m)
         if who is None:
             log(f"[{g.title}] Mensaje de un canal ({m.sender_chat.title}): ICE no lo mira.")
@@ -226,9 +265,10 @@ class ICE:
             if target is not None:
                 reply = RepliedTo(r.message_id, target)
         await self.feed(g, Message(
-            id=m.message_id, user=who, text=translate.text_of(m), reply_to=reply,
-            forwarded_from_channel=translate.from_channel(m),
-            hidden_links=translate.hidden_links(m)))
+            id=m.message_id, user=who, text=translate.album_text(parts), reply_to=reply,
+            forwarded_from_channel=any(translate.from_channel(p) for p in parts),
+            hidden_links=tuple(link for p in parts for link in translate.hidden_links(p)),
+            album=tuple(p.message_id for p in parts) if len(parts) > 1 else ()))
 
     async def on_private(self, m: TgMessage) -> None:
         """Por privado ICE no modera nada: solo dice el id del chat, que es lo
@@ -290,7 +330,7 @@ class ICE:
         bot, chat = self.bot, g.id
         match a:
             case DeleteMessage():
-                await bot.delete_message(chat, a.message_id)
+                await bot.delete_messages(chat, list(a.message_ids))
             case Restrict():
                 await bot.restrict_chat_member(
                     chat, a.user.id, MUTED,

@@ -266,7 +266,9 @@ function msgNode(m) {
       h("span", { class: "msg-time mono" }, clock(m.at))),
     m.forwarded && h("div", { class: "msg-tag" }, icon("forward"), "Reenviado de un canal"),
     m.reply && h("div", { class: "quote" }, h("b", {}, m.reply.name), " ", m.reply.text),
-    h("div", { class: "msg-text" }, m.text),
+    m.photos && h("div", { class: "msg-tag" }, icon("album"), `Álbum de ${m.photos.length} fotos`),
+    m.photos && h("div", { class: "album" }, m.photos.map(() => h("span", { class: "album-tile" }))),
+    m.text ? h("div", { class: "msg-text" }, m.text) : null,
     m.button && h("button", {
       class: "msg-button", type: "button",
       onclick: () => send({ op: "press", user: active, data: m.button.data }),
@@ -274,7 +276,10 @@ function msgNode(m) {
     h("div", { class: "deleted-note" }, h("span", {}, icon("trash"), "Borrado por ICE")),
     h("button", {
       class: "icon-btn small msg-reply", type: "button", "data-tip": "Responder", "aria-label": "Responder",
-      onclick: () => { replyTo = { msg_id: m.msg_id, name: m.name, text: m.text }; renderComposer(); $("#text").focus(); },
+      onclick: () => {
+        replyTo = { msg_id: m.msg_id, name: m.name, text: m.text || `Álbum de ${m.photos.length} fotos` };
+        renderComposer(); $("#text").focus();
+      },
     }, icon("reply")));
   return node;
 }
@@ -433,6 +438,14 @@ document.querySelector(".quick").addEventListener("click", (e) => {
   if (!b) return;
   const q = b.dataset.quick;
   if (q === "burst") send({ op: "burst", user: active });
+  if (q === "album") {
+    // Lo escrito en el campo va como texto del álbum, como en Telegram.
+    const input = $("#text");
+    const cmd = { op: "album", user: active, text: input.value.trim(), reply_to: replyTo?.msg_id ?? null, forwarded };
+    input.value = "";
+    replyTo = null;
+    send(cmd);
+  }
   if (q === "link") send({ op: "send", user: active, text: "miren esto: www.cripto-gratis.xyz", forwarded });
   if (q === "rules") send({ op: "send", user: active, text: "/reglas" });
   if (q === "staff") send({ op: "send", user: active, text: "/staff@ice_bot" });
@@ -440,7 +453,9 @@ document.querySelector(".quick").addEventListener("click", (e) => {
     // El último mensaje de esta persona que quedó en el grupo.
     const last = snap.chat.findLast((m) => m.kind === "user" && m.user_id === active && !m.deleted);
     const name = snap.people.find((p) => p.id === active).name;
-    if (last) send({ op: "send", user: active, text: last.text, forwarded });
+    // Un álbum se repite con las mismas fotos, como al reenviarlo.
+    if (last?.photos) send({ op: "album", user: active, text: last.text, photos: last.photos, forwarded });
+    else if (last) send({ op: "send", user: active, text: last.text, forwarded });
     else toast(`${name} todavía no tiene mensajes en el grupo.`);
   }
 });

@@ -66,6 +66,17 @@ class Message:
     # Links que no se ven en el texto: en Telegram una palabra puede llevar un
     # link escondido (entity text_link). El adaptador los saca y los pone acá.
     hidden_links: tuple[str, ...] = ()
+    # Un álbum de fotos: Telegram lo manda como un mensaje por foto, pero para
+    # quien lo publica es un solo aviso. El adaptador los junta y los manda
+    # acá como uno: `id` es el primero y `album`, los ids de todos. El texto
+    # es el del álbum; si no tiene, el adaptador pone ahí qué fotos son, así
+    # el mismo álbum reenviado cuenta como repetido.
+    album: tuple[int, ...] = ()
+
+    @property
+    def ids(self) -> tuple[int, ...]:
+        """Todos los mensajes que hay que borrar para sacar este."""
+        return self.album or (self.id,)
 
 
 @dataclass(frozen=True)

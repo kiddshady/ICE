@@ -37,7 +37,7 @@ def check(msg: Message, m: Member, ctx: Ctx, d: Decision) -> bool:
     m.muted_until = until
     q.clear()
     d.do(
-        DeleteMessage(msg.id),
+        DeleteMessage(msg.ids),
         Restrict(u, until=until),
         Say(f"🔇 {u.tag}: demasiados mensajes seguidos. Escritura restringida por "
             f"{duration(cfg.flood_mute)}."),

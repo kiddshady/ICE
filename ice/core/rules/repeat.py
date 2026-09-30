@@ -52,7 +52,7 @@ def check(msg: Message, m: Member, ctx: Ctx, d: Decision) -> bool:
     wait = duration(sent_at + cfg.repeat_window - ctx.now)
     u = m.user
     d.do(
-        DeleteMessage(msg.id),
+        DeleteMessage(msg.ids),
         Say(f"🔁 {u.tag}: mensaje repetido, eliminado. Se puede volver a publicar "
             f"en {wait}."),
         Log(f"{u.name}: mensaje repetido a los {ago}. Borrado."),

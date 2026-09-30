@@ -129,7 +129,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
 
     # De acá para abajo, comandos de moderación.
     if not u.is_admin:
-        d.do(DeleteMessage(msg.id))
+        d.do(DeleteMessage(msg.ids))
         d.hit(RULE, f"/{cmd} es solo para admins y {u.name} no lo es. "
                     "Se borra el comando sin responder, para no darle bola.")
         return

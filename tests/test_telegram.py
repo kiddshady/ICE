@@ -73,6 +73,17 @@ class Messages(unittest.TestCase):
         self.assertEqual(translate.text_of(photo("u1")), translate.text_of(photo("u1")))
         self.assertNotEqual(translate.text_of(photo("u1")), translate.text_of(photo("u2")))
 
+    def test_album_text(self):
+        def photo(uid, caption=None):
+            return message(caption=caption, media_group_id="g1", photo=[
+                PhotoSize(file_id="x", file_unique_id=uid, width=1, height=1)])
+        self.assertEqual(translate.album_text([photo("u1"), photo("u2", "vendo bici")]),
+                         "vendo bici")
+        # Sin texto: qué fotos son. Otras fotos, otro texto.
+        same = translate.album_text([photo("u1"), photo("u2")])
+        self.assertEqual(same, translate.album_text([photo("u1"), photo("u2")]))
+        self.assertNotEqual(same, translate.album_text([photo("u3"), photo("u4")]))
+
     def test_hidden_link(self):
         m = message(text="mirá acá", entities=[
             MessageEntity(type="text_link", offset=5, length=3, url="https://spam.xyz")])

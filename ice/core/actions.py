@@ -20,8 +20,9 @@ class Button:
 
 @dataclass(frozen=True)
 class DeleteMessage:
-    message_id: int
-    api = "deleteMessage"
+    """Borra un mensaje, o todos los de un álbum juntos (Message.ids)."""
+    message_ids: tuple[int, ...]
+    api = "deleteMessages"
 
 
 @dataclass(frozen=True)
@@ -90,9 +91,10 @@ class Toast:
 
 @dataclass(frozen=True)
 class Log:
-    """Una línea para el chat privado de registro de los admins."""
+    """Una línea para el registro. El bot de verdad la escribe en su consola:
+    en el grupo, cada cosa ya tiene su propio mensaje."""
     text: str
-    api = "sendMessage (al chat de registro)"
+    api = "consola del bot (no es una llamada a Telegram)"
 
 
 Action = (DeleteMessage | Restrict | Unrestrict | Kick | Ban | Unban

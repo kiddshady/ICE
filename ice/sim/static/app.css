@@ -387,6 +387,12 @@ button { background: none; border: 0; padding: 0; cursor: default; }
   font-size: 11px; color: var(--text-3); margin-bottom: 2px;
 }
 .msg-tag .icon { width: 12px; height: 12px; }
+/* Las fotos del álbum: el simulador no tiene imágenes, así que son baldosas. */
+.album { display: flex; flex-wrap: wrap; gap: 3px; margin: 3px 0 4px; }
+.album-tile {
+  width: 34px; height: 34px; border-radius: var(--r-xs);
+  background: var(--s3); box-shadow: var(--hairline);
+}
 
 .quote {
   margin: 3px 0 5px; padding: 4px 9px;

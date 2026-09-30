@@ -82,7 +82,7 @@ def check(msg: Message, m: Member, ctx: Ctx, d: Decision) -> bool:
 
 def _punish(msg: Message, m: Member, ctx: Ctx, d: Decision,
             why: str, reason: str) -> bool:
-    d.do(DeleteMessage(msg.id))
+    d.do(DeleteMessage(msg.ids))
     d.hit(RULE, f"{why} Se borra y suma una advertencia.")
     warns.add_warn(m, reason, ctx, d)
     return True

@@ -26,20 +26,37 @@ def is_user_content(m: TgMessage) -> bool:
     return m.content_type in USER_CONTENT
 
 
+def media_id(m: TgMessage) -> str | None:
+    """El archivo que lleva el mensaje. `file_unique_id` es el mismo si se
+    reenvía o se copia el mismo archivo; si se vuelve a subir desde la
+    galería, Telegram lo toma como uno nuevo."""
+    media = ((m.photo[-1] if m.photo else None) or m.sticker or m.video or m.animation
+             or m.document or m.audio or m.voice or m.video_note)
+    return media.file_unique_id if media is not None else None
+
+
 def text_of(m: TgMessage) -> str:
     """El texto que miran las reglas. Una foto o un sticker sin texto se
-    cuentan por su archivo (`file_unique_id` es el mismo si se vuelve a mandar
-    la misma foto): así el anti-repetición agarra la misma foto dos veces,
-    pero no confunde dos fotos distintas sin texto."""
+    cuentan por su archivo: así el anti-repetición agarra la misma foto dos
+    veces, pero no confunde dos fotos distintas sin texto."""
     if m.text is not None:
         return m.text
     if m.caption:
         return m.caption
-    media = ((m.photo[-1] if m.photo else None) or m.sticker or m.video or m.animation
-             or m.document or m.audio or m.voice or m.video_note)
-    if media is not None:
-        return f"[{m.content_type} {media.file_unique_id}]"
-    return f"[{m.content_type}]"
+    media = media_id(m)
+    return f"[{m.content_type} {media}]" if media else f"[{m.content_type}]"
+
+
+def album_text(parts: list[TgMessage]) -> str:
+    """El texto de un álbum: el que escribió quien lo mandó (va en una sola
+    de las fotos, casi siempre la primera). Si no escribió nada, qué fotos
+    son, en orden: el mismo álbum reenviado da el mismo texto."""
+    if len(parts) == 1:
+        return text_of(parts[0])
+    caption = next((m.caption for m in parts if m.caption), None)
+    if caption:
+        return caption
+    return "[album " + " ".join(media_id(m) or m.content_type for m in parts) + "]"
 
 
 def hidden_links(m: TgMessage) -> tuple[str, ...]:

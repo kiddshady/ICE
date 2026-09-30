@@ -99,6 +99,14 @@ Telegram no le avisa al bot cuando alguien se cambia el nombre. El bot lo nota
 recién cuando esa persona escribe, toca un botón o alguien le responde un
 mensaje.
 
+**Un álbum de fotos es un solo aviso.** Telegram lo manda como un mensaje
+por foto; el adaptador espera a que lleguen todas (un segundo y medio desde
+la última) y se lo pasa al cerebro como uno. Así un álbum de 10 fotos cuenta
+como 1 mensaje para el anti-flood, y si hay que borrarlo (un link, una
+repetición) se borra entero con un solo aviso. Un álbum sin texto se compara
+por sus fotos: el mismo álbum reenviado es una repetición; las mismas fotos
+subidas de nuevo desde la galería son fotos nuevas para Telegram.
+
 Comandos: `/reglas` y `/warns` son para todos. `/warn [motivo]`, `/unwarn`,
 `/mute [minutos]`, `/unmute`, `/ban [motivo]` y `/unban` son solo para admins.
 Apuntan a alguien de dos formas: **respondiendo** a un mensaje suyo, o
@@ -163,8 +171,6 @@ cosa ya tiene su mensaje. Para saber el id de tu chat privado, mandale
 
 ## Lo que falta
 
-- **Albums de fotos**: un aviso de 6 fotos o más llega como 6 mensajes
-  seguidos y hoy salta el anti-flood.
 - **Mensajes editados**: el bot no los mira, así que un link agregado
   editando pasa.
 - **Desafíos de verificación tras un reinicio**: si el bot se corta con uno
