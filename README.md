@@ -163,6 +163,23 @@ una verificación vencen a su hora aunque el bot haya estado apagado.
 5. **Sumarlo al grupo y hacerlo admin**, con permiso para borrar mensajes y
    para banear. Sin eso no ve los mensajes ni puede sancionar.
 
+### Que arranque solo con Windows
+
+```
+.\autoarranque.ps1
+```
+
+Pone un acceso directo en la carpeta de Inicio: desde el próximo inicio de
+sesión, ICE arranca solo y sin ventana (`pythonw`). Lo que normalmente sale en
+la consola va a `data\ice.log`. Si se cae (por ejemplo, porque todavía no hay
+internet), vuelve a intentar a los 30 s. El mismo script lo maneja:
+`-Iniciar` lo prende ya, `-Detener` lo apaga, `-Estado` dice si arranca solo,
+si está corriendo y muestra lo último del registro, y `-Quitar` saca el
+arranque automático.
+
+Corre una sola copia por vez: si ya hay un ICE andando, `python -m ice.tg`
+avisa y no arranca. Dos a la vez se pelearían por los mensajes.
+
 Restringir solo anda en **supergrupos**. Si la consola avisa que es un grupo
 básico: Editar grupo > Historial del chat para nuevos miembros > Visible, y
 Telegram lo convierte.

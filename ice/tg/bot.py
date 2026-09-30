@@ -12,6 +12,7 @@ import asyncio
 import json
 import os
 import platform
+import sys
 import time
 from pathlib import Path
 
@@ -150,30 +151,37 @@ class ICE:
     # ---------------------------------------------------------------- arranque
 
     async def run(self) -> None:
-        self.me = await self.bot.get_me()
-        log(f"Conectado como @{self.me.username}.")
-        self.data.mkdir(exist_ok=True)
-        # Los grupos que ya tenían memoria: así sus verificaciones y silencios
-        # vencen aunque todavía no haya llegado ningún mensaje de ellos.
-        for db in sorted(self.data.glob("*.db")):
-            try:
-                await self.group(int(db.stem))
-            except TelegramMigrateToChat:
-                self.forget(int(db.stem))
-            except (ValueError, TelegramAPIError) as e:
-                log(f"No se pudo retomar {db.name}: {e}")
-        await self.bot.set_my_commands(PUBLIC_COMMANDS, BotCommandScopeAllGroupChats())
-        await self.bot.set_my_commands(ADMIN_COMMANDS, BotCommandScopeAllChatAdministrators())
-        ticker = asyncio.create_task(self.tick_forever())
-        log("Escuchando. Ctrl+C para cortar.")
-        await self.announce()
+        ticker = None
         try:
+            self.me = await self.bot.get_me()
+            log(f"Conectado como @{self.me.username}.")
+            self.data.mkdir(exist_ok=True)
+            # Los grupos que ya tenían memoria: así sus verificaciones y
+            # silencios vencen aunque todavía no haya llegado ningún mensaje.
+            for db in sorted(self.data.glob("*.db")):
+                try:
+                    await self.group(int(db.stem))
+                except TelegramMigrateToChat:
+                    self.forget(int(db.stem))
+                except (ValueError, TelegramAPIError) as e:
+                    log(f"No se pudo retomar {db.name}: {e}")
+            await self.bot.set_my_commands(PUBLIC_COMMANDS, BotCommandScopeAllGroupChats())
+            await self.bot.set_my_commands(ADMIN_COMMANDS,
+                                           BotCommandScopeAllChatAdministrators())
+            ticker = asyncio.create_task(self.tick_forever())
+            # Sin consola (arrancó solo con Windows) no hay Ctrl+C que valga.
+            log("Escuchando." + (" Ctrl+C para cortar." if sys.stdout.isatty() else ""))
+            await self.announce()
             await self.dp.start_polling(self.bot, allowed_updates=UPDATES,
                                         handle_signals=False)
         finally:
-            ticker.cancel()
+            # También si se cayó al arrancar: el que lo llama puede reintentar,
+            # y no tiene que quedar nada abierto del intento anterior.
+            if ticker is not None:
+                ticker.cancel()
             for g in self.groups.values():
                 g.mod.store.close()
+            await self.bot.session.close()
 
     async def group(self, chat_id: int) -> Group:
         """El grupo con ese id; si es la primera vez que aparece, lo arma. Si
