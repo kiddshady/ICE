@@ -435,6 +435,7 @@ document.querySelector(".quick").addEventListener("click", (e) => {
   if (q === "burst") send({ op: "burst", user: active });
   if (q === "link") send({ op: "send", user: active, text: "miren esto: www.cripto-gratis.xyz", forwarded });
   if (q === "rules") send({ op: "send", user: active, text: "/reglas" });
+  if (q === "staff") send({ op: "send", user: active, text: "/staff@ice_bot" });
   if (q === "repeat") {
     // El último mensaje de esta persona que quedó en el grupo.
     const last = snap.chat.findLast((m) => m.kind === "user" && m.user_id === active && !m.deleted);

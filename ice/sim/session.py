@@ -17,11 +17,13 @@ from ..core.context import Ctx
 from ..core.actions import (Ban, DeleteMessage, Kick, Log, Restrict, Say, Toast,
                             Unban, Unrestrict, Unsay)
 from ..core.decision import Decision
-from ..core.events import ButtonPressed, Joined, Left, Message, RepliedTo, Tick, User
+from ..core.events import (ButtonPressed, Joined, Left, Message, RepliedTo, StaffList,
+                           Tick, User)
 from ..core.rules.links import is_newcomer
 from ..core.timefmt import duration
 
-BOT = User(id=0, name="ICE", is_admin=True)
+# Telegram exige que el @ de un bot termine en "bot".
+BOT = User(id=0, name="ICE", is_admin=True, username="ice_bot", is_bot=True)
 
 
 @dataclass
@@ -58,7 +60,7 @@ class Session:
         self._next_user = 1
         self._bot_msgs: dict[str, dict[str, Any]] = {}
 
-        self._add("Fran", "admin, creó el grupo", admin=True, present=True)
+        self._add("Fran", "admin, creó el grupo", admin=True, owner=True, present=True)
         self._add("Cami", "miembro de siempre", present=True)
         self._add("Juan", "persona nueva")
         self._add("PromoCripto", "bot de spam")
@@ -67,13 +69,18 @@ class Session:
         for p in self.people.values():
             if p.present:
                 self.mod.state.member(p.user)
+        # Lo que haría el adaptador al arrancar: pedir getChatAdministrators y
+        # contárselo al cerebro.
+        staff = tuple(p.user for p in self.people.values() if p.user.is_admin) + (BOT,)
+        d = self.mod.handle(StaffList(staff), self.now)
+        self._trace("ICE pide la lista de administración", "staff", d)
         self._system("Simulación nueva de un grupo de compra-venta. Fran y Cami "
                      "ya estaban cuando llegó ICE.")
 
-    def _add(self, name: str, role: str, admin: bool = False,
+    def _add(self, name: str, role: str, admin: bool = False, owner: bool = False,
              present: bool = False) -> Person:
         user = User(id=self._next_user, name=name, is_admin=admin,
-                    username=self._username_for(name))
+                    username=self._username_for(name), is_owner=owner)
         self._next_user += 1
         p = Person(user=user, role=role, present=present)
         self.people[user.id] = p

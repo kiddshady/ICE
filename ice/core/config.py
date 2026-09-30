@@ -49,7 +49,7 @@ class Config:
 
     # La 6 no la aplica ninguna regla automática: es el /ban de un admin.
     rules_text: str = (
-        "Reglas del grupo:\n"
+        "📜 Reglas del grupo:\n"
         "1. Sin links.\n"
         "2. Sin reenvíos de canales durante las primeras 24 h en el grupo.\n"
         "3. Sin ráfagas de mensajes seguidos.\n"

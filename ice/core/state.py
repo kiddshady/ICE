@@ -34,6 +34,9 @@ class Member:
 class GroupState:
     members: dict[int, Member] = field(default_factory=dict)
     banned: dict[int, User] = field(default_factory=dict)
+    # La administración, tal como la contó el adaptador (evento StaffList).
+    # No se guarda en disco: al arrancar, el adaptador la vuelve a pedir.
+    staff: list[User] = field(default_factory=list)
 
     def member(self, user: User) -> Member:
         """El registro de un usuario; si no lo conocía, lo crea como alguien

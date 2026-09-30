@@ -17,6 +17,10 @@ class User:
     is_admin: bool = False
     # El @usuario, sin la arroba. Es opcional en Telegram: hay cuentas sin él.
     username: str | None = None
+    # Quien creó el grupo (status "creator" en Telegram). También es admin.
+    is_owner: bool = False
+    # Una cuenta de bot. Telegram lo marca en cada usuario (User.is_bot).
+    is_bot: bool = False
 
 
 @dataclass(frozen=True)
@@ -61,10 +65,20 @@ class ButtonPressed:
 
 
 @dataclass(frozen=True)
+class StaffList:
+    """Quiénes administran el grupo: lo que devuelve getChatAdministrators
+    (fundador, admins y bots con permisos). El cerebro no puede preguntarle
+    a Telegram, así que el adaptador se lo cuenta: al arrancar y cada vez que
+    Telegram avisa que alguien ganó o perdió la administración (update
+    chat_member)."""
+    users: tuple[User, ...]
+
+
+@dataclass(frozen=True)
 class Tick:
     """Pasó el tiempo. Sirve para lo que vence solo: la verificación que nadie
     contestó o el silencio que termina. En Telegram lo dispara un temporizador
     cada tantos segundos; en el simulador, los botones del reloj."""
 
 
-Event = Joined | Left | Message | ButtonPressed | Tick
+Event = Joined | Left | Message | ButtonPressed | StaffList | Tick

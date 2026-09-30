@@ -9,7 +9,7 @@ from __future__ import annotations
 from .config import Config
 from .context import Ctx
 from .decision import Decision
-from .events import ButtonPressed, Event, Joined, Left, Message, Tick
+from .events import ButtonPressed, Event, Joined, Left, Message, StaffList, Tick
 from .rules import commands, flood, links, names, repeat, verification
 from .state import GroupState
 from .store import Store
@@ -44,6 +44,10 @@ class Moderator:
                 verification.on_button(event, ctx, d)
             case Message():
                 self._on_message(event, ctx, d)
+            case StaffList():
+                ctx.state.staff = list(event.users)
+                d.info("staff", f"El adaptador le pasó la lista de administración "
+                                f"({len(event.users)} cuentas). Queda anotada para /staff.")
             case Tick():
                 self._on_tick(ctx, d)
         return d

@@ -1,6 +1,6 @@
 import unittest
 
-from ice.core.events import Joined
+from ice.core.events import Joined, StaffList, User
 
 from .helpers import ADMIN, NEW, OLD, SPAM, Group, kinds
 
@@ -67,23 +67,23 @@ class BanByUsername(unittest.TestCase):
         d = g.say(ADMIN, "/ban @Cami ofrecer servicios sexuales")
         self.assertEqual(kinds(d), ["Ban", "Say", "Log"])
         self.assertEqual(d.actions[1].text,
-                         "Cami recibió un ban permanente por ofrecer servicios sexuales.")
+                         "🔨 Cami recibió un ban permanente por ofrecer servicios sexuales.")
         self.assertIn(OLD.id, g.mod.state.banned)
 
     def test_ban_without_reason_does_not_mention_one(self):
         g = Group()
         d = g.say(ADMIN, "/ban @cami")
-        self.assertEqual(d.actions[1].text, "Cami recibió un ban permanente.")
+        self.assertEqual(d.actions[1].text, "🔨 Cami recibió un ban permanente.")
 
     def test_reason_starting_with_por_is_not_doubled(self):
         g = Group()
         d = g.say(ADMIN, "/ban @cami Por spam")
-        self.assertEqual(d.actions[1].text, "Cami recibió un ban permanente por spam.")
+        self.assertEqual(d.actions[1].text, "🔨 Cami recibió un ban permanente por spam.")
 
     def test_ban_by_reply_takes_the_reason_too(self):
         g = Group()
         d = g.say(ADMIN, "/ban vender armas", reply_to=(1, OLD))
-        self.assertEqual(d.actions[1].text, "Cami recibió un ban permanente por vender armas.")
+        self.assertEqual(d.actions[1].text, "🔨 Cami recibió un ban permanente por vender armas.")
 
     def test_ban_wipes_their_messages(self):
         g = Group()
@@ -124,6 +124,43 @@ class BanByUsername(unittest.TestCase):
         text = g.say(OLD, "/reglas").actions[0].text
         self.assertNotIn("compra", text)
         self.assertIn("6. Contenido prohibido: ban directo.", text)
+
+
+MOD = User(5, "Vale", is_admin=True, username="vale")
+NOHANDLE = User(6, "Tomi", is_admin=True)            # admin sin @
+BOT = User(0, "ICE", is_admin=True, username="ice_bot", is_bot=True)
+OWNER = User(1, "Fran", is_admin=True, username="fran", is_owner=True)
+
+
+class Staff(unittest.TestCase):
+    def group(self):
+        g = Group()
+        g.handle(StaffList((OWNER, MOD, NOHANDLE, BOT)))
+        return g
+
+    def test_staff_is_public_and_lists_every_role(self):
+        d = self.group().say(OLD, "/staff@ice_bot")
+        self.assertEqual(kinds(d), ["Say"])
+        self.assertEqual(d.actions[0].text,
+                         "👥 ICE → STAFF\n\n"
+                         "👑 Fundador:\nFran (@fran)\n\n"
+                         "🛡️ Admins:\nVale (@vale)\nTomi\n\n"
+                         "🤖 Bots:\nICE (@ice_bot)")
+
+    def test_empty_section_is_left_out(self):
+        g = Group()
+        g.handle(StaffList((OWNER, BOT)))
+        text = g.say(OLD, "/staff").actions[0].text
+        self.assertNotIn("Admins", text)
+
+    def test_uses_the_latest_name_seen(self):
+        g = self.group()
+        g.say(User(5, "Valentina", is_admin=True, username="vale"), "hola")
+        self.assertIn("Valentina (@vale)", g.say(OLD, "/staff").actions[0].text)
+
+    def test_without_list_says_so(self):
+        d = Group().say(OLD, "/staff")
+        self.assertIn("no disponible", d.actions[0].text)
 
 
 if __name__ == "__main__":

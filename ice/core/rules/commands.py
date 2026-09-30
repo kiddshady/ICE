@@ -1,4 +1,7 @@
-"""Comandos. /reglas y /warns los puede usar cualquiera; el resto, solo admins.
+"""Comandos. /reglas, /warns y /staff los puede usar cualquiera; el resto, solo admins.
+
+Las respuestas llevan un emoji adelante: son mensajes de chat y ahí ayudan a
+reconocer de un vistazo qué pasó.
 
 Los comandos de moderación apuntan a alguien de dos maneras:
 
@@ -9,6 +12,8 @@ Los comandos de moderación apuntan a alguien de dos maneras:
 """
 from __future__ import annotations
 
+from dataclasses import replace
+
 from ..actions import Ban, DeleteMessage, Log, Restrict, Say, Unban, Unrestrict
 from ..context import Ctx
 from ..decision import Decision
@@ -17,7 +22,7 @@ from ..timefmt import duration
 from . import warns
 
 RULE = "comandos"
-PUBLIC = {"reglas", "warns"}
+PUBLIC = {"reglas", "warns", "staff"}
 MOD = {"warn", "unwarn", "mute", "unmute", "ban", "unban"}
 
 
@@ -48,8 +53,24 @@ def ban_text(who: str, reason: str) -> str:
     if reason.casefold().startswith("por "):
         reason = reason[4:].strip()
     if not reason:
-        return f"{who} recibió un ban permanente."
-    return f"{who} recibió un ban permanente por {reason}."
+        return f"🔨 {who} recibió un ban permanente."
+    return f"🔨 {who} recibió un ban permanente por {reason}."
+
+
+def staff_text(staff: list[User]) -> str:
+    """El cartel de /staff: fundador, admins y bots, cada grupo con su título.
+    Un grupo vacío no se muestra."""
+    def line(u: User) -> str:
+        return f"{u.name} (@{u.username})" if u.username else u.name
+
+    owner = [u for u in staff if u.is_owner]
+    bots = [u for u in staff if u.is_bot]
+    admins = [u for u in staff if not u.is_owner and not u.is_bot]
+    blocks = ["👥 ICE → STAFF"]
+    for title, group in (("👑 Fundador:", owner), ("🛡️ Admins:", admins), ("🤖 Bots:", bots)):
+        if group:
+            blocks.append("\n".join([title, *map(line, group)]))
+    return "\n\n".join(blocks)
 
 
 def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
@@ -72,9 +93,31 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
             return
         who = who or u
         n = ctx.state.member(who).warns
-        d.do(Say(f"{who.name}: {n}/{ctx.config.max_warns} advertencias.",
+        d.do(Say(f"⚠️ {who.name}: {n}/{ctx.config.max_warns} advertencias.",
                  reply_to=msg.id))
         d.passed(RULE, f"/warns es público: {who.name} tiene {n}.")
+        return
+
+    if cmd == "staff":
+        if not ctx.state.staff:
+            d.do(Say("ℹ️ Lista de administración no disponible por el momento.",
+                     reply_to=msg.id))
+            d.info(RULE, "El bot todavía no recibió la lista de administración: "
+                         "el adaptador se la pasa al arrancar (getChatAdministrators).")
+            return
+        # El nombre y el @ más recientes que el bot vio de cada cuenta: si
+        # alguien del staff se lo cambió y ya escribió, la lista sale con el
+        # nuevo. El rol sigue saliendo de la lista de Telegram.
+        staff = []
+        for u in ctx.state.staff:
+            seen = ctx.state.members.get(u.id)
+            staff.append(replace(u, name=seen.user.name, username=seen.user.username)
+                         if seen else u)
+        d.do(Say(staff_text(staff)))
+        d.passed(RULE, f"/staff es público: el bot publica quiénes administran el grupo "
+                       f"({len(staff)} cuentas). Sale de getChatAdministrators, no de "
+                       "los que el bot vio escribir, así que aparecen hasta los que "
+                       "nunca hablaron.")
         return
 
     # De acá para abajo, comandos de moderación.
@@ -89,13 +132,13 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
         unknown(handle_, cmd, msg, d)
         return
     if target is None:
-        d.do(Say(f"/{cmd} se usa respondiendo a un mensaje de la cuenta en cuestión, "
+        d.do(Say(f"ℹ️ /{cmd} se usa respondiendo a un mensaje de la cuenta en cuestión, "
                  f"o con su @usuario: /{cmd} @usuario.", reply_to=msg.id))
         d.info(RULE, f"/{cmd} necesita saber a quién: hay que usarlo respondiendo "
                      "a un mensaje de esa persona o escribiendo su @usuario.")
         return
     if target.is_admin and cmd not in {"unwarn", "unmute", "unban"}:
-        d.do(Say("Las cuentas de administración no admiten sanciones.", reply_to=msg.id))
+        d.do(Say("🛡️ Las cuentas de administración no admiten sanciones.", reply_to=msg.id))
         d.info(RULE, f"{target.name} es admin. Telegram tampoco deja restringir "
                      "ni banear a un admin.")
         return
@@ -110,7 +153,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
     elif cmd == "unwarn":
         before = m.warns
         m.warns = max(0, m.warns - 1)
-        d.do(Say(f"{who}: advertencia retirada. Total: {m.warns}/{ctx.config.max_warns}."),
+        d.do(Say(f"✅ {who}: advertencia retirada. Total: {m.warns}/{ctx.config.max_warns}."),
              Log(f"{u.name} le sacó una advertencia a {who} ({before} a {m.warns})."))
         d.passed(RULE, f"Advertencias de {who}: de {before} a {m.warns}.")
 
@@ -120,7 +163,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
         until = ctx.now + length
         m.muted_until = until
         d.do(Restrict(target, until=until),
-             Say(f"{who}: escritura restringida por {duration(length)}."),
+             Say(f"🔇 {who}: escritura restringida por {duration(length)}."),
              Log(f"{u.name} silenció a {who} por {duration(length)}."))
         how = f"{minutes} min pedidos" if minutes else "sin número, va el default"
         d.hit(RULE, f"/mute a {who} por {duration(length)} ({how}). Telegram lo "
@@ -128,7 +171,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
 
     elif cmd == "unmute":
         m.muted_until = None
-        d.do(Unrestrict(target), Say(f"{who}: restricción de escritura retirada."),
+        d.do(Unrestrict(target), Say(f"🔊 {who}: restricción de escritura retirada."),
              Log(f"{u.name} le sacó el silencio a {who}."))
         d.passed(RULE, f"/unmute: {who} recupera el permiso de escribir.")
 
@@ -144,17 +187,17 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
 
     elif cmd == "unban":
         if ctx.state.banned.pop(target.id, None) is None:
-            d.do(Say(f"{who}: sin expulsión vigente.", reply_to=msg.id))
+            d.do(Say(f"ℹ️ {who}: sin expulsión vigente.", reply_to=msg.id))
             d.info(RULE, f"{who} no tenía ban: nada que hacer.")
             return
-        d.do(Unban(target), Say(f"{who}: expulsión retirada. La cuenta puede volver a ingresar."),
+        d.do(Unban(target), Say(f"🔓 {who}: expulsión retirada. La cuenta puede volver a ingresar."),
              Log(f"{u.name} desbaneó a {who}."))
         d.passed(RULE, f"/unban: {who} puede volver a entrar. No vuelve solo: "
                        "tiene que entrar de nuevo con el link del grupo.")
 
 
 def unknown(handle_: str, cmd: str, msg: Message, d: Decision) -> None:
-    d.do(Say(f"No hay registro de {handle_} en este grupo. Para aplicar /{cmd}, "
+    d.do(Say(f"❓ No hay registro de {handle_} en este grupo. Para aplicar /{cmd}, "
              "responder a un mensaje de esa cuenta.", reply_to=msg.id))
     d.info(RULE, f"El bot no conoce a {handle_}. Telegram no le deja buscar a "
                  "alguien por su @: solo reconoce a quien ya escribió o entró "
