@@ -47,6 +47,11 @@ class Config:
     # /mute sin número de minutos.
     default_mute: float = HOUR
 
+    # /reglas una vez por `rules_window`. Pedirlas de nuevo antes se borra
+    # y cuesta una advertencia: las reglas no cambian, no hace falta
+    # llenar el chat con ellas.
+    rules_window: float = 15 * MINUTE
+
     # La 6 no la aplica ninguna regla automática: es el /ban de un admin.
     rules_text: str = (
         "📜 Reglas del grupo:\n"

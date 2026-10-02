@@ -28,6 +28,8 @@ class Member:
     # Sus últimos mensajes (normalizados) y cuándo los mandó, para el
     # anti-repetición.
     last_texts: dict[str, float] = field(default_factory=dict)
+    # Cuándo pidió /reglas por última vez y el bot le contestó.
+    rules_at: float | None = None
 
 
 @dataclass

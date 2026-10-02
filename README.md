@@ -130,6 +130,10 @@ Además, el ban borra todos los mensajes que esa cuenta mandó al grupo
 (`revoke_messages` de Telegram). No se puede deshacer: un `/unban` no los
 devuelve.
 
+`/reglas` contesta una vez cada 15 minutos por persona. Pedirlas de nuevo
+antes se borra sin respuesta y suma una advertencia. Los admins no tienen
+límite.
+
 Las reglas de `/reglas` son generales, para cualquier tipo de grupo. La 6
 (contenido prohibido: ban directo) no la aplica ninguna regla automática: es el
 `/ban` de un admin.

@@ -11,6 +11,33 @@ class Commands(unittest.TestCase):
         d = g.say(OLD, "/reglas")
         self.assertEqual(kinds(d), ["Say"])
 
+    def test_rules_again_is_deleted_and_warned(self):
+        g = Group()
+        g.say(OLD, "/reglas")
+        d = g.at(60).say(OLD, "/reglas@de4dc0dex_bot")
+        self.assertEqual(kinds(d), ["DeleteMessage", "Say", "Log"])
+        self.assertEqual(d.actions[1].text, "⚠️ Cami [2]: advertencia 1/3 (/reglas repetido).")
+        self.assertEqual(g.member(OLD).warns, 1)
+
+    def test_rules_again_after_the_window_is_answered(self):
+        g = Group()
+        g.say(OLD, "/reglas")
+        g.at(60).say(OLD, "/reglas")
+        d = g.at(15 * 60).say(OLD, "/reglas")
+        self.assertEqual(kinds(d), ["Say"])
+        self.assertEqual(g.member(OLD).warns, 1)
+
+    def test_rules_window_is_per_person(self):
+        g = Group()
+        g.say(OLD, "/reglas")
+        g.join_verified(NEW)
+        self.assertEqual(kinds(g.say(NEW, "/reglas")), ["Say"])
+
+    def test_admins_can_ask_for_rules_any_time(self):
+        g = Group()
+        g.say(ADMIN, "/reglas")
+        self.assertEqual(kinds(g.say(ADMIN, "/reglas")), ["Say"])
+
     def test_bot_suffix_is_ignored(self):
         g = Group()
         self.assertEqual(kinds(g.say(OLD, "/reglas@de4dc0dex_bot")), ["Say"])

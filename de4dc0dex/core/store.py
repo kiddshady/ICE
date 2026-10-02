@@ -5,9 +5,10 @@ que siempre, y después de cada evento el Moderator le pide al Store que
 guarde. El Store compara cada miembro con lo último que escribió y solo
 toca las filas que cambiaron: un Tick en el que no venció nada no escribe.
 
-Lo que dura segundos o minutos no se guarda: los tiempos del anti-flood y
-los textos del anti-repetición. Después de un reinicio arrancan vacíos, que
-en el peor caso deja pasar una ráfaga o un aviso repetido.
+Lo que dura segundos o minutos no se guarda: los tiempos del anti-flood,
+los textos del anti-repetición y cuándo pidió cada uno /reglas. Después de
+un reinicio arrancan vacíos, que en el peor caso deja pasar una ráfaga, un
+aviso repetido o un /reglas de más.
 
 Las horas se guardan tal cual las da el reloj del Moderator. El bot de
 verdad le pasa `time.time()`, que sigue contando aunque el programa se

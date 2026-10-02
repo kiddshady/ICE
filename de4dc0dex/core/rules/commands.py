@@ -82,8 +82,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
         return
 
     if cmd == "reglas":
-        d.do(Say(ctx.config.rules_text, reply_to=msg.id))
-        d.passed(RULE, "/reglas es público: el bot responde con las reglas.")
+        rules(msg, ctx, d)
         return
 
     if cmd == "warns":
@@ -202,6 +201,31 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
              Log(f"{u.name} desbaneó a {who}."))
         d.passed(RULE, f"/unban: {who} puede volver a entrar. No vuelve solo: "
                        "tiene que entrar de nuevo con el link del grupo.")
+
+
+def rules(msg: Message, ctx: Ctx, d: Decision) -> None:
+    """/reglas contesta una vez por ventana. Pedirlas de nuevo antes se
+    borra y cuesta una advertencia. El reloj cuenta desde la vez que el bot
+    contestó, no desde el repetido. Los admins no tienen límite."""
+    cfg = ctx.config
+    u = msg.user
+    m = ctx.state.member(u)
+    window = duration(cfg.rules_window)
+    if u.is_admin or m.rules_at is None or ctx.now - m.rules_at >= cfg.rules_window:
+        if not u.is_admin:
+            m.rules_at = ctx.now
+        d.do(Say(cfg.rules_text, reply_to=msg.id))
+        d.passed(RULE, f"/reglas es público: el bot responde con las reglas. "
+                       + ("Es admin: no tiene límite." if u.is_admin else
+                          f"La próxima vez que las pida antes de {window} se borra y "
+                          "suma una advertencia."))
+        return
+
+    ago = duration(ctx.now - m.rules_at)
+    d.do(DeleteMessage(msg.ids))
+    d.hit(RULE, f"{u.name} ya pidió /reglas hace {ago} y la ventana es de {window}. "
+                "Se borra el comando sin repetir las reglas.")
+    warns.add_warn(m, "/reglas repetido", ctx, d)
 
 
 def unknown(handle_: str, cmd: str, msg: Message, d: Decision) -> None:
