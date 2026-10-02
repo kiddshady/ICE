@@ -77,7 +77,7 @@ class Store:
     def _migrate(self) -> None:
         (version,) = self.db.execute("PRAGMA user_version").fetchone()
         if version > VERSION:
-            raise RuntimeError(f"La base es de una versión más nueva de ICE ({version}); "
+            raise RuntimeError(f"La base es de una versión más nueva de DE4DC0DEX ({version}); "
                                f"esta entiende hasta la {VERSION}.")
         with self.db:
             if version == 0:

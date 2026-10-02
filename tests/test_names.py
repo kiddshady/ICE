@@ -1,8 +1,8 @@
 import unittest
 from dataclasses import replace
 
-from ice.core.config import MINUTE
-from ice.core.events import ButtonPressed, Joined, Tick
+from de4dc0dex.core.config import MINUTE
+from de4dc0dex.core.events import ButtonPressed, Joined, Tick
 
 from .helpers import ADMIN, NEW, OLD, Group, kinds
 

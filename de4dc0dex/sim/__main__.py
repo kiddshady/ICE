@@ -1,5 +1,5 @@
-"""Servidor del simulador: `python -m ice.sim` y abrí http://127.0.0.1:4390
-(o `python -m ice.sim <puerto>` para usar otro).
+"""Servidor del simulador: `python -m de4dc0dex.sim` y abrí http://127.0.0.1:4390
+(o `python -m de4dc0dex.sim <puerto>` para usar otro).
 
 Sirve la página y una sola ruta, POST /api, que le pasa cada pedido a la
 sesión. Usa solo la librería estándar de Python: no hay nada que instalar.
@@ -59,10 +59,10 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
-    # `python -m ice.sim 4391` lo abre en otro puerto.
+    # `python -m de4dc0dex.sim 4391` lo abre en otro puerto.
     port = int(sys.argv[1]) if len(sys.argv) > 1 else PORT
     server = ThreadingHTTPServer((HOST, port), Handler)
-    print(f"Simulador de ICE en http://{HOST}:{port}  (Ctrl+C para cortar)")
+    print(f"Simulador de DE4DC0DEX en http://{HOST}:{port}  (Ctrl+C para cortar)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

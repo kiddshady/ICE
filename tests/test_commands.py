@@ -1,6 +1,6 @@
 import unittest
 
-from ice.core.events import Joined, StaffList, User
+from de4dc0dex.core.events import Joined, StaffList, User
 
 from .helpers import ADMIN, NEW, OLD, SPAM, Group, kinds
 
@@ -13,7 +13,7 @@ class Commands(unittest.TestCase):
 
     def test_bot_suffix_is_ignored(self):
         g = Group()
-        self.assertEqual(kinds(g.say(OLD, "/reglas@ice_bot")), ["Say"])
+        self.assertEqual(kinds(g.say(OLD, "/reglas@de4dc0dex_bot")), ["Say"])
 
     def test_mod_command_from_non_admin_is_deleted(self):
         g = Group()
@@ -128,7 +128,7 @@ class BanByUsername(unittest.TestCase):
 
 MOD = User(5, "Vale", is_admin=True, username="vale")
 NOHANDLE = User(6, "Tomi", is_admin=True)            # admin sin @
-BOT = User(0, "ICE", is_admin=True, username="ice_bot", is_bot=True)
+BOT = User(0, "DE4DC0DEX", is_admin=True, username="de4dc0dex_bot", is_bot=True)
 OWNER = User(1, "Fran", is_admin=True, username="fran", is_owner=True)
 
 
@@ -139,13 +139,13 @@ class Staff(unittest.TestCase):
         return g
 
     def test_staff_is_public_and_lists_every_role(self):
-        d = self.group().say(OLD, "/staff@ice_bot")
+        d = self.group().say(OLD, "/staff@de4dc0dex_bot")
         self.assertEqual(kinds(d), ["Say"])
         self.assertEqual(d.actions[0].text,
-                         "👥 ICE → STAFF\n\n"
+                         "👥 DE4DC0DEX → STAFF\n\n"
                          "👑 Fundador:\nFran (@fran)\n\n"
                          "🛡️ Admins:\nVale (@vale)\nTomi\n\n"
-                         "🤖 Bots:\nICE (@ice_bot)")
+                         "🤖 Bots:\nDE4DC0DEX (@de4dc0dex_bot)")
 
     def test_empty_section_is_left_out(self):
         g = Group()

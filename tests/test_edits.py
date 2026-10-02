@@ -1,6 +1,6 @@
 import unittest
 
-from ice.core.events import Message
+from de4dc0dex.core.events import Message
 
 from .helpers import ADMIN, OLD, Group, kinds
 

@@ -1,6 +1,6 @@
 import unittest
 
-from ice.core.actions import DeleteMessage, Say
+from de4dc0dex.core.actions import DeleteMessage, Say
 
 from .helpers import OLD, Group, kinds
 

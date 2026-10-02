@@ -1,8 +1,8 @@
 import unittest
 
-from ice.core.config import DAY, Config
-from ice.core.events import Message, User
-from ice.core.rules.links import find_links
+from de4dc0dex.core.config import DAY, Config
+from de4dc0dex.core.events import Message, User
+from de4dc0dex.core.rules.links import find_links
 
 from .helpers import ADMIN, NEW, OLD, Group, kinds
 

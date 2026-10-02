@@ -13,8 +13,8 @@ try:
                                MessageOriginChannel, PhotoSize)
     from aiogram.types import Message as TgMessage, User as TgUser
 
-    from ice.tg import translate
-    from ice.tg.bot import SAID_KEPT, Group
+    from de4dc0dex.tg import translate
+    from de4dc0dex.tg.bot import SAID_KEPT, Group
 except ImportError:
     translate = None
 

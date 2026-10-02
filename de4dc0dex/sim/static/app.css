@@ -1,4 +1,4 @@
-/* ICE · simulador, con la piel de Prism (Opal): hojas de vidrio acromáticas
+/* DE4DC0DEX · simulador, con la piel de Prism (Opal): hojas de vidrio acromáticas
    sobre una niebla con grano. Lo importante no se pinta: se talla (pozo
    oscuro con el canto encendido). El rojo es solo para lo que falla o se
    frena. Los valores salen de S:\tools\Prism\renderer\css\tokens.css. */
@@ -406,7 +406,7 @@ button { background: none; border: 0; padding: 0; cursor: default; }
 }
 .quote b { font-weight: 600; color: var(--text-2); }
 
-/* El mensaje que ICE borró queda como fantasma. */
+/* El mensaje que DE4DC0DEX borró queda como fantasma. */
 .deleted-note {
   display: grid; grid-template-rows: 0fr;
   opacity: 0;

@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "ice-sim",
+      "name": "de4dc0dex-sim",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "ice.sim", "4390"],
+      "runtimeArgs": ["-m", "de4dc0dex.sim", "4390"],
       "port": 4390
     }
   ]

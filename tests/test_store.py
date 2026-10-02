@@ -4,9 +4,9 @@ import unittest
 from dataclasses import replace
 from pathlib import Path
 
-from ice.core import Moderator, Store
-from ice.core.config import MINUTE
-from ice.core.events import Joined, Left, Tick
+from de4dc0dex.core import Moderator, Store
+from de4dc0dex.core.config import MINUTE
+from de4dc0dex.core.events import Joined, Left, Tick
 
 from .helpers import ADMIN, NEW, OLD, SPAM, Group, kinds
 
@@ -17,7 +17,7 @@ class Restart(unittest.TestCase):
 
     def setUp(self):
         self.dir = tempfile.TemporaryDirectory()
-        self.path = Path(self.dir.name) / "ice.db"
+        self.path = Path(self.dir.name) / "de4dc0dex.db"
         self.stores = []
         self.g = Group(store=self.open())
         self.g.handle(Tick())  # guarda a los que ya estaban

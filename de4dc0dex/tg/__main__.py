@@ -1,11 +1,11 @@
-"""El bot de verdad: `python -m ice.tg`.
+"""El bot de verdad: `python -m de4dc0dex.tg`.
 
-Lee la configuración de un archivo `.env` en la carpeta de ICE (ver
+Lee la configuración de un archivo `.env` en la carpeta de DE4DC0DEX (ver
 `.env.example`). El token nunca va al repo: `.env` está en el .gitignore.
 
-Con `pythonw -m ice.tg` corre sin ventana (así lo arranca `autoarranque.ps1`
+Con `pythonw -m de4dc0dex.tg` corre sin ventana (así lo arranca `autoarranque.ps1`
 al iniciar Windows) y lo que normalmente sale en la consola va a
-`data/ice.log`.
+`data/de4dc0dex.log`.
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.utils.token import TokenValidationError
 
-from .bot import ICE, log
+from .bot import DE4DC0DEX, log
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
@@ -30,7 +30,7 @@ DATA = ROOT / "data"
 RETRY_AFTER = 30
 
 # El registro sin consola: cuando pasa de este tamaño, el viejo queda como
-# ice.log.1 y se empieza uno nuevo.
+# de4dc0dex.log.1 y se empieza uno nuevo.
 LOG_MAX = 2 * 1024 * 1024
 
 
@@ -46,13 +46,13 @@ def load_env(path: Path) -> None:
 
 
 def open_output() -> None:
-    """Sin consola (pythonw), la salida va a data/ice.log. Con consola, en
+    """Sin consola (pythonw), la salida va a data/de4dc0dex.log. Con consola, en
     UTF-8: nombres de grupos y personas traen emojis, y la consola de Windows
     no se tiene que caer si la salida va a un archivo."""
     if sys.stdout is not None:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         return
-    path = DATA / "ice.log"
+    path = DATA / "de4dc0dex.log"
     if path.is_file() and path.stat().st_size > LOG_MAX:
         os.replace(path, path.with_suffix(".log.1"))
     sys.stdout = sys.stderr = open(path, "a", encoding="utf-8", errors="replace",
@@ -60,10 +60,10 @@ def open_output() -> None:
 
 
 def only_copy() -> IO | None:
-    """Traba data/ice.lock mientras el bot corre. Si ya está trabado, hay otro
-    ICE andando: dos a la vez se pelean por los mensajes (Telegram le da cada
+    """Traba data/de4dc0dex.lock mientras el bot corre. Si ya está trabado, hay otro
+    DE4DC0DEX andando: dos a la vez se pelean por los mensajes (Telegram le da cada
     uno a uno solo) y los dos moderan a medias. None si hay otro."""
-    lock = open(DATA / "ice.lock", "a+")
+    lock = open(DATA / "de4dc0dex.lock", "a+")
     try:
         if os.name == "nt":
             import msvcrt
@@ -82,15 +82,15 @@ def main() -> int:
     DATA.mkdir(exist_ok=True)
     open_output()
     load_env(ROOT / ".env")
-    token = os.environ.get("ICE_TOKEN", "")
+    token = os.environ.get("DE4DC0DEX_TOKEN", "")
     if not token:
-        print("Falta el token. Copiá .env.example como .env y poné ICE_TOKEN "
+        print("Falta el token. Copiá .env.example como .env y poné DE4DC0DEX_TOKEN "
               "(te lo da @BotFather).")
         return 1
-    notify_chat = os.environ.get("ICE_NOTIFY_CHAT", "").strip()
+    notify_chat = os.environ.get("DE4DC0DEX_NOTIFY_CHAT", "").strip()
     lock = only_copy()
     if lock is None:
-        print("ICE ya está corriendo (seguramente el que arranca solo con Windows). "
+        print("DE4DC0DEX ya está corriendo (seguramente el que arranca solo con Windows). "
               "Para apagarlo: .\\autoarranque.ps1 -Detener")
         return 1
 
@@ -98,17 +98,17 @@ def main() -> int:
         try:
             bot = Bot(token)
         except TokenValidationError:
-            print("El token de ICE_TOKEN no tiene la forma de un token de @BotFather.")
+            print("El token de DE4DC0DEX_TOKEN no tiene la forma de un token de @BotFather.")
             return 1
-        ice = ICE(bot, DATA, int(notify_chat) if notify_chat else None)
+        app = DE4DC0DEX(bot, DATA, int(notify_chat) if notify_chat else None)
         try:
-            asyncio.run(ice.run())
+            asyncio.run(app.run())
             return 0
         except KeyboardInterrupt:
             log("Cortado.")
             return 0
         except TelegramUnauthorizedError:
-            log("Telegram no acepta el token de ICE_TOKEN: revisalo con @BotFather.")
+            log("Telegram no acepta el token de DE4DC0DEX_TOKEN: revisalo con @BotFather.")
             return 1
         except Exception as e:
             log(f"Se cayó: {e!r}. Vuelvo a intentar en {RETRY_AFTER} s.")

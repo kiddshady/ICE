@@ -27,7 +27,7 @@ MOD = {"warn", "unwarn", "mute", "unmute", "ban", "unban"}
 
 
 def parse(text: str) -> tuple[str, str]:
-    """'/warn@ice_bot spam' -> ('warn', 'spam'). En grupos, Telegram le agrega
+    """'/warn@de4dc0dex_bot spam' -> ('warn', 'spam'). En grupos, Telegram le agrega
     @nombre_del_bot al comando cuando lo elegís del menú."""
     head, _, arg = text[1:].partition(" ")
     return head.split("@", 1)[0].lower(), arg.strip()
@@ -66,7 +66,7 @@ def staff_text(staff: list[User]) -> str:
     owner = [u for u in staff if u.is_owner]
     bots = [u for u in staff if u.is_bot]
     admins = [u for u in staff if not u.is_owner and not u.is_bot]
-    blocks = ["👥 ICE → STAFF"]
+    blocks = ["👥 DE4DC0DEX → STAFF"]
     for title, group in (("👑 Fundador:", owner), ("🛡️ Admins:", admins), ("🤖 Bots:", bots)):
         if group:
             blocks.append("\n".join([title, *map(line, group)]))
@@ -78,7 +78,7 @@ def handle(msg: Message, ctx: Ctx, d: Decision) -> None:
     u = msg.user
 
     if cmd not in PUBLIC | MOD:
-        d.info(RULE, f"/{cmd} no es un comando de ICE: se ignora.")
+        d.info(RULE, f"/{cmd} no es un comando de DE4DC0DEX: se ignora.")
         return
 
     if cmd == "reglas":

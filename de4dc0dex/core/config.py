@@ -1,6 +1,6 @@
 """Las perillas del bot. Todos los tiempos van en segundos.
 
-Supuesto de base: ICE modera un grupo de compra-venta y servicios. Ahí cada
+Supuesto de base: DE4DC0DEX modera un grupo de compra-venta y servicios. Ahí cada
 mensaje es un aviso, y los valores de abajo están pensados para eso. Las
 reglas que se muestran con /reglas, en cambio, son generales: sirven para
 cualquier grupo.

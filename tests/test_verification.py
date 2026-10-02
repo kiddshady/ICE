@@ -1,6 +1,6 @@
 import unittest
 
-from ice.core.events import ButtonPressed, Joined, Left, Tick
+from de4dc0dex.core.events import ButtonPressed, Joined, Left, Tick
 
 from .helpers import ADMIN, NEW, OLD, Group, kinds
 

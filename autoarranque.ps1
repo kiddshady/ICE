@@ -1,11 +1,11 @@
 ﻿<#
 .SYNOPSIS
-    Hace que ICE arranque solo al iniciar sesión en Windows, sin ventana.
+    Hace que DE4DC0DEX arranque solo al iniciar sesión en Windows, sin ventana.
 
 .DESCRIPTION
     Pone un acceso directo en la carpeta de Inicio de Windows que corre
-    `pythonw -m ice.tg` en esta carpeta. No hace falta ser administrador.
-    Sin ventana, lo que ICE cuenta en la consola va a data\ice.log.
+    `pythonw -m de4dc0dex.tg` en esta carpeta. No hace falta ser administrador.
+    Sin ventana, lo que DE4DC0DEX cuenta en la consola va a data\de4dc0dex.log.
 
 .EXAMPLE
     .\autoarranque.ps1             # que arranque solo desde el próximo inicio
@@ -27,8 +27,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
-$link = Join-Path ([Environment]::GetFolderPath('Startup')) 'ICE.lnk'
-$logFile = Join-Path $root 'data\ice.log'
+$link = Join-Path ([Environment]::GetFolderPath('Startup')) 'DE4DC0DEX.lnk'
+$logFile = Join-Path $root 'data\de4dc0dex.log'
 
 function Find-Pythonw {
     $python = (Get-Command python -ErrorAction SilentlyContinue).Source
@@ -38,45 +38,45 @@ function Find-Pythonw {
     $pythonw
 }
 
-# Los ICE que están corriendo: con ventana (python) o sin ella (pythonw).
-function Get-Ice {
+# Los DE4DC0DEX que están corriendo: con ventana (python) o sin ella (pythonw).
+function Get-Bot {
     Get-CimInstance Win32_Process -Filter "Name = 'pythonw.exe' OR Name = 'python.exe'" |
-        Where-Object { $_.CommandLine -match '-m\s+ice\.tg\b' }
+        Where-Object { $_.CommandLine -match '-m\s+de4dc0dex\.tg\b' }
 }
 
 if ($Detener) {
-    $running = @(Get-Ice)
-    if (-not $running) { 'ICE no está corriendo.'; return }
+    $running = @(Get-Bot)
+    if (-not $running) { 'DE4DC0DEX no está corriendo.'; return }
     $running | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
-    'ICE apagado.'
+    'DE4DC0DEX apagado.'
     return
 }
 
 if ($Estado) {
     $auto = if (Test-Path $link) { 'sí' } else { 'no' }
-    $running = @(Get-Ice)
+    $running = @(Get-Bot)
     $now = if ($running) { "sí (proceso $($running.ProcessId -join ', '))" } else { 'no' }
     "Arranca solo con Windows: $auto"
     "Corriendo ahora:          $now"
     if (Test-Path $logFile) {
         ''
-        'Lo último del registro (data\ice.log):'
+        'Lo último del registro (data\de4dc0dex.log):'
         Get-Content $logFile -Tail 10 -Encoding utf8
     }
     return
 }
 
 if ($Quitar) {
-    if (Test-Path $link) { Remove-Item $link; 'ICE ya no arranca solo con Windows.' }
-    else { 'ICE no estaba puesto para arrancar solo.' }
+    if (Test-Path $link) { Remove-Item $link; 'DE4DC0DEX ya no arranca solo con Windows.' }
+    else { 'DE4DC0DEX no estaba puesto para arrancar solo.' }
     'Si está corriendo, sigue hasta que lo apagues: .\autoarranque.ps1 -Detener'
     return
 }
 
 if ($Iniciar) {
-    if (Get-Ice) { 'ICE ya está corriendo.'; return }
-    Start-Process (Find-Pythonw) -ArgumentList '-m', 'ice.tg' -WorkingDirectory $root
-    'ICE arrancó sin ventana. Lo que hace va a data\ice.log.'
+    if (Get-Bot) { 'DE4DC0DEX ya está corriendo.'; return }
+    Start-Process (Find-Pythonw) -ArgumentList '-m', 'de4dc0dex.tg' -WorkingDirectory $root
+    'DE4DC0DEX arrancó sin ventana. Lo que hace va a data\de4dc0dex.log.'
     return
 }
 
@@ -84,9 +84,9 @@ if ($Iniciar) {
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($link)
 $shortcut.TargetPath = Find-Pythonw
-$shortcut.Arguments = '-m ice.tg'
+$shortcut.Arguments = '-m de4dc0dex.tg'
 $shortcut.WorkingDirectory = $root
-$shortcut.Description = 'ICE, bot moderador de Telegram'
+$shortcut.Description = 'DE4DC0DEX, bot moderador de Telegram'
 $shortcut.Save()
-'Listo: ICE arranca solo cada vez que inicies sesión en Windows.'
+'Listo: DE4DC0DEX arranca solo cada vez que inicies sesión en Windows.'
 'Para prenderlo ya, sin esperar al próximo inicio: .\autoarranque.ps1 -Iniciar'

@@ -1,4 +1,4 @@
-// ICE · simulador. La página no decide nada: le manda cada acción al cerebro
+// DE4DC0DEX · simulador. La página no decide nada: le manda cada acción al cerebro
 // (POST /api) y dibuja lo que vuelve. Todo lo que ves en "Por qué" lo escribió
 // el cerebro de Python, no este archivo.
 
@@ -274,7 +274,7 @@ function msgNode(m) {
       class: "msg-button", type: "button",
       onclick: () => send({ op: "press", user: active, data: m.button.data }),
     }, m.button.label),
-    h("div", { class: "deleted-note" }, h("span", {}, icon("trash"), "Borrado por ICE")),
+    h("div", { class: "deleted-note" }, h("span", {}, icon("trash"), "Borrado por DE4DC0DEX")),
     h("button", {
       class: "icon-btn small msg-reply", type: "button", "data-tip": "Responder", "aria-label": "Responder",
       onclick: () => {
@@ -457,7 +457,7 @@ document.querySelector(".quick").addEventListener("click", (e) => {
   }
   if (q === "link") send({ op: "send", user: active, text: "miren esto: www.cripto-gratis.xyz", forwarded });
   if (q === "rules") send({ op: "send", user: active, text: "/reglas" });
-  if (q === "staff") send({ op: "send", user: active, text: "/staff@ice_bot" });
+  if (q === "staff") send({ op: "send", user: active, text: "/staff@de4dc0dex_bot" });
   if (q === "edit") {
     const last = snap.chat.findLast((m) => m.kind === "user" && m.user_id === active && !m.deleted);
     const name = snap.people.find((p) => p.id === active).name;

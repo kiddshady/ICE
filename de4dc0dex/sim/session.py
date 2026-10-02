@@ -23,7 +23,7 @@ from ..core.rules.links import is_newcomer
 from ..core.timefmt import duration
 
 # Telegram exige que el @ de un bot termine en "bot".
-BOT = User(id=0, name="ICE", is_admin=True, username="ice_bot", is_bot=True)
+BOT = User(id=0, name="DE4DC0DEX", is_admin=True, username="de4dc0dex_bot", is_bot=True)
 
 
 @dataclass
@@ -74,9 +74,9 @@ class Session:
         # contárselo al cerebro.
         staff = tuple(p.user for p in self.people.values() if p.user.is_admin) + (BOT,)
         d = self.mod.handle(StaffList(staff), self.now)
-        self._trace("ICE pide la lista de administración", "staff", d)
+        self._trace("DE4DC0DEX pide la lista de administración", "staff", d)
         self._system("Simulación nueva de un grupo de compra-venta. Fran y Cami "
-                     "ya estaban cuando llegó ICE.")
+                     "ya estaban cuando llegó DE4DC0DEX.")
 
     def _add(self, name: str, role: str, admin: bool = False, owner: bool = False,
              present: bool = False) -> Person:
@@ -229,7 +229,7 @@ class Session:
         old = p.user.name
         p.user = replace(p.user, name=name)
         return (f"{old} ahora se llama {name}. Telegram no se lo avisa al bot: "
-                "ICE se entera cuando escriba, toque un botón o alguien le responda.")
+                "DE4DC0DEX se entera cuando escriba, toque un botón o alguien le responda.")
 
     def _burst(self, p: Person) -> str | None:
         """Siete mensajes seguidos, uno por segundo."""
@@ -265,14 +265,14 @@ class Session:
                             item["deleted"] = True
                 case Kick():
                     self.people[a.user.id].present = False
-                    self._system(f"ICE sacó a {a.user.name} del grupo.")
+                    self._system(f"DE4DC0DEX sacó a {a.user.name} del grupo.")
                 case Ban():
                     self.people[a.user.id].present = False
                     if a.revoke_messages:
                         for item in self.chat:
                             if item["kind"] == "user" and item["user_id"] == a.user.id:
                                 item["deleted"] = True
-                    self._system(f"ICE baneó a {a.user.name}.")
+                    self._system(f"DE4DC0DEX baneó a {a.user.name}.")
                 case Say():
                     item = {
                         "kind": "bot", "msg_id": self._next_msg, "user_id": BOT.id,

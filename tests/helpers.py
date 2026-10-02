@@ -1,8 +1,8 @@
 """Atajos para escribir los tests en pocas líneas."""
 from __future__ import annotations
 
-from ice.core import Config, Moderator
-from ice.core.events import Joined, Message, RepliedTo, User
+from de4dc0dex.core import Config, Moderator
+from de4dc0dex.core.events import Joined, Message, RepliedTo, User
 
 ADMIN = User(1, "Fran", is_admin=True, username="fran")
 OLD = User(2, "Cami", username="cami")      # estaba antes que el bot
@@ -44,7 +44,7 @@ class Group:
 
     def join_verified(self, user: User) -> None:
         """Entra y toca su botón: queda como nuevo pero verificado."""
-        from ice.core.events import ButtonPressed
+        from de4dc0dex.core.events import ButtonPressed
         self.handle(Joined(user))
         self.handle(ButtonPressed(user, f"verify:{user.id}"))
 

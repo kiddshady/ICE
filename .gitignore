@@ -5,5 +5,5 @@ __pycache__/
 # La memoria del bot de verdad, un archivo por grupo.
 data/
 
-# Datos locales de plugins de Claude Code: no son de ICE.
+# Datos locales de plugins de Claude Code: no son de DE4DC0DEX.
 .claude/data/

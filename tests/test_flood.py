@@ -1,7 +1,7 @@
 import unittest
 from itertools import count
 
-from ice.core.events import Tick
+from de4dc0dex.core.events import Tick
 
 from .helpers import ADMIN, OLD, Group, kinds
 

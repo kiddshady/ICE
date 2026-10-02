@@ -1,7 +1,7 @@
 import unittest
 
-from ice.core.config import MINUTE, Config
-from ice.core.rules.repeat import normalize
+from de4dc0dex.core.config import MINUTE, Config
+from de4dc0dex.core.rules.repeat import normalize
 
 from .helpers import ADMIN, NEW, OLD, Group, kinds
 

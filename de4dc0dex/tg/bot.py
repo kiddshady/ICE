@@ -126,7 +126,7 @@ class Album:
         self.task: asyncio.Task | None = None  # que el recolector no se pierda
 
 
-class ICE:
+class DE4DC0DEX:
     def __init__(self, bot: Bot, data: Path, notify_chat: int | None) -> None:
         self.bot = bot
         self.data = data
@@ -205,16 +205,16 @@ class ICE:
         return g
 
     async def announce(self) -> None:
-        """Avisa por ICE_NOTIFY_CHAT que ICE se conectó. Es lo único que
+        """Avisa por DE4DC0DEX_NOTIFY_CHAT que DE4DC0DEX se conectó. Es lo único que
         manda ahí: lo que pasa en el grupo ya lo cuenta en el grupo."""
         if self.notify_chat is None:
             return
         try:
             await self.bot.send_message(
                 self.notify_chat,
-                f"🟢 ICE ONLINE\nNode: {platform.node()}\nTime: {time.strftime('%H:%M:%S')}")
+                f"🟢 DE4DC0DEX ONLINE\nNode: {platform.node()}\nTime: {time.strftime('%H:%M:%S')}")
         except TelegramAPIError as e:
-            log(f"No pude avisar en ICE_NOTIFY_CHAT ({self.notify_chat}): {e}\n"
+            log(f"No pude avisar en DE4DC0DEX_NOTIFY_CHAT ({self.notify_chat}): {e}\n"
                 "  Si es un chat privado, primero hay que mandarle /start al bot: "
                 "Telegram no deja que un bot le escriba a alguien que nunca le habló.")
 
@@ -251,7 +251,7 @@ class ICE:
 
     def warn_if_not_admin(self, g: Group) -> None:
         if g.staff_loaded and self.me and self.me.id not in g.admins:
-            log(f"  Ojo: ICE no es admin en «{g.title}». Sin eso no ve los mensajes "
+            log(f"  Ojo: DE4DC0DEX no es admin en «{g.title}». Sin eso no ve los mensajes "
                 "ni puede borrar, silenciar ni banear.")
 
     # ---------------------------------------------------------------- de Telegram al cerebro
@@ -309,7 +309,7 @@ class ICE:
         m = parts[0]
         who = self.sender(g, m)
         if who is None:
-            log(f"[{g.title}] Mensaje de un canal ({m.sender_chat.title}): ICE no lo mira.")
+            log(f"[{g.title}] Mensaje de un canal ({m.sender_chat.title}): DE4DC0DEX no lo mira.")
             return
         reply = None
         r = m.reply_to_message
@@ -340,10 +340,10 @@ class ICE:
             hidden_links=translate.hidden_links(m), album=album, edited=True))
 
     async def on_private(self, m: TgMessage) -> None:
-        """Por privado ICE no modera nada: solo dice el id del chat, que es lo
-        que hace falta para ICE_NOTIFY_CHAT."""
-        await m.answer(f"🆔 Este chat es el {m.chat.id}.\nPara que ICE avise acá cuando se "
-                       f"conecta: ICE_NOTIFY_CHAT={m.chat.id} en el .env.")
+        """Por privado DE4DC0DEX no modera nada: solo dice el id del chat, que es lo
+        que hace falta para DE4DC0DEX_NOTIFY_CHAT."""
+        await m.answer(f"🆔 Este chat es el {m.chat.id}.\nPara que DE4DC0DEX avise acá cuando se "
+                       f"conecta: DE4DC0DEX_NOTIFY_CHAT={m.chat.id} en el .env.")
 
     async def on_button(self, q: CallbackQuery) -> None:
         if q.message is None or q.message.chat.type not in ("group", "supergroup"):
@@ -368,7 +368,7 @@ class ICE:
                 await self.feed(g, Left(who))
 
     async def on_me(self, u: ChatMemberUpdated) -> None:
-        """A ICE lo agregaron, lo hicieron admin o le cambiaron los permisos."""
+        """A DE4DC0DEX lo agregaron, lo hicieron admin o le cambiaron los permisos."""
         g = await self.group(u.chat.id)
         await self.refresh_staff(g)
 
